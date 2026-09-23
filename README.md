@@ -1,5 +1,15 @@
 # AI Based Contract Review
 
+> **Continuation notice (Fall 2026):** this repository is the Fall 2026 team's working copy of the
+> project, continuing the Python/NiceGUI codebase originated by the Spring 2024 teams below.
+> History was carried over from the original repository,
+> [Ktmking111/AI_Contract_Review_Spring2024](https://github.com/Ktmking111/AI_Contract_Review_Spring2024),
+> which itself originated from
+> [J-Hill22/AI-Based-Contract-Review](https://github.com/J-Hill22/AI-Based-Contract-Review/tree/Cycle3).
+> A separate Fall 2025 team also worked on this project via a full rewrite (Next.js/Supabase/LLM);
+> that code is not part of this repository. See the team's Cycle 0 report for current status,
+> known limitations, and the active backlog.
+
 ## Overview 
 This is our Senior Design Project for Auburn University in Spring of 2024. We are tasked with working with Auburn's Office of Sponsored Programs (OSP) to develop a program that could take in a contract and automatically highlight all instances of problematic language/clauses that are contained within the contract. This program will allow the OSP's contract negotiators to be more efficient in how many contracts they are able to process and ultimately allow Auburn University to fulfill its mission of doubling research expenditures set by President Roberts. This tool is meant to be a home-grown and cost-effective tool that competes with commercial applications such as LegalSifter, Lexion.ai, Cobblestone, etc. This project consists of two teams, an orange team which is focusing on the core functionality of the document processing and flagging, and a blue team, which is focusing on the user interface and improving ease of use for the clients. This code originated from [Jarret's Best Effort: AI Based Contract Review](https://github.com/J-Hill22/AI-Based-Contract-Review/tree/Cycle3), the prior semesters progress towards fulfilling the client's requests.
 
