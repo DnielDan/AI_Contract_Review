@@ -1,8 +1,7 @@
 import openpyxl
 import nltk
 import re
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.corpus import stopwords
+from nltk.tokenize import sent_tokenize
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -55,22 +54,6 @@ def pretty_print_nested_values(dictionary):
     return "\n".join(output)
 
 # This function generates a similarity score when comparing two sentences of a contract
-def jaccard_similarity(sentence1, sentence2):
-    # Tokenize sentences
-    words1 = set(word_tokenize(sentence1.lower()))
-    words2 = set(word_tokenize(sentence2.lower()))
-
-    # Remove stopwords
-    stop_words =  set(stopwords.words('english'))
-    words1 = words1- stop_words
-    words2 = words2- stop_words
-
-    # Calculate Jaccard Similarity
-    intersection = words1.intersection(words2)
-    union = words1.union(words2)
-    return len(intersection) / len(union)
-
-#This function also generates a similarity score when comparing two sentences of a contract, but I think it may be better than Jaccard.
 def sk_cosine_sim(sen1, sen2):
     #print("Sentence 1: " + sen1 + "\n" + "Sentence 2:" + sen2)
     # Convert texts into TF-IDF vectors

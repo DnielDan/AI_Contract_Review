@@ -32,24 +32,12 @@ def flag_findings(txt_file):
                      b"Noncompliance material to financial statements noted? Yes",
                      b"Significant deficiencies identified? Yes",
                     ]
-    with open(txt_file) as f:
-        for i in findings_list:
-            s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-            if s.find(i) != -1:
-                return True
+    try:
+        with open(txt_file) as f:
+            for i in findings_list:
+                s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+                if s.find(i) != -1:
+                    return True
+    except:
+        return False
     return False
-
-
-# Main function that takes in list of pdf_files and attempts to see if there are findings.
-def main():
-    pdf_files = ["2021_report.pdf"]
-    for pdf_file in pdf_files:
-        text_file = pdf_to_txt(pdf_file)
-        if flag_findings(text_file):
-            print(f"Flagged findings found in {pdf_file}")
-        else:
-            print(f"No flagged findings found in {pdf_file}")
-
-
-if __name__ == "__main__":
-    main()
