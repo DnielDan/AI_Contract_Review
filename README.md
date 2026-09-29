@@ -10,9 +10,19 @@
 > that code is not part of this repository. See the team's Cycle 0 report for current status,
 > known limitations, and the active backlog.
 
-## Running the app
-Requires Python 3.11. Install dependencies with `pip install -r requirements-demo.txt`, then run:
+## Setup
+Requires **Python 3.11** (developed and tested on 3.11.9). From the repository folder:
 
+```
+python -m venv .venv
+.venv\Scripts\activate          # Windows
+source .venv/bin/activate       # macOS / Linux
+pip install -r requirements.txt
+```
+
+The reference matrices and the NLTK data the app needs are included in `supplementary_files/`, so no extra downloads are required.
+
+## Running the app
 ```
 python main.py
 ```
@@ -26,40 +36,43 @@ Agreement Scanner (`/subscanner`) at http://127.0.0.1:8080. Launch options are s
 | `AICR_PORT` | `8080` | Port to listen on. |
 | `AICR_NATIVE` | `0` | Set to `1` to open in a desktop window (requires `pywebview`) instead of the browser. |
 
-## Overview 
+## Sample files
+Sample documents for trying each scanner are in `supplementary_files/samples_test_set/`:
+
+| Scanner | Try | Expected result |
+|---|---|---|
+| AI Contract Scanner (`.docx`) | `0078-23 Adhikari - agreement.docx` | An annotated `<name>_scanned.docx` with flagged language and highlighted FAR clauses |
+| AI Contract Scanner (`.pdf`) | `0430-23 O'Brien - fully executed.pdf` | Same as above, from a PDF |
+| Subcontractor Agreement Scanner | `24-00373 Subcontract Auburn University_FE (1).pdf` | "not flagged". This file is a subcontract, not an audit report, so it contains none of the audit-finding phrases the scanner looks for; a sample audit report is still needed to test the flagged case. |
+
+Legacy `.doc` files (such as `Godwin - redline 12.5.23.doc`) are not supported yet.
+
+## What the app currently does
+- **AI Contract Scanner:** converts an uploaded `.docx` or `.pdf` to text, compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove).
+- **Subcontractor Agreement Scanner:** searches an uploaded PDF for three audit-finding phrases (for example, "Material weaknesses identified? Yes") and reports flagged or not flagged.
+- The app does not currently use a large language model; all analysis is local pattern and similarity matching.
+
+## Project history
+The sections below are from the Spring 2024 teams and describe the project's original goals.
+
+### Overview 
 This is our Senior Design Project for Auburn University in Spring of 2024. We are tasked with working with Auburn's Office of Sponsored Programs (OSP) to develop a program that could take in a contract and automatically highlight all instances of problematic language/clauses that are contained within the contract. This program will allow the OSP's contract negotiators to be more efficient in how many contracts they are able to process and ultimately allow Auburn University to fulfill its mission of doubling research expenditures set by President Roberts. This tool is meant to be a home-grown and cost-effective tool that competes with commercial applications such as LegalSifter, Lexion.ai, Cobblestone, etc. This project consists of two teams, an orange team which is focusing on the core functionality of the document processing and flagging, and a blue team, which is focusing on the user interface and improving ease of use for the clients. This code originated from [Jarret's Best Effort: AI Based Contract Review](https://github.com/J-Hill22/AI-Based-Contract-Review/tree/Cycle3), the prior semesters progress towards fulfilling the client's requests.
 
-## Project Introduction
+### Project Introduction
 The Office of Sponsored Programs (OSP) is responsible for the administration of research contracts and grants received by the university. OSP has a team of contract administrators who work with sponsors to negotiate and finalize research contracts. The contract negotiation process is time-consuming and requires careful review of legal and technical terms. Currently, the contract review process is manual and can be subject to numerous errors and inefficiencies.
 
 The number of contracts requiring review and their complexity has grown significantly over the past few years with Auburn’s upward trajectory in research funding. However, the number of staff in OSP has remained stagnant. OSP’s review workload is expected to continue to increase with President Robert’s mission to double research expenditures. Pursuant to item number six of the AU Strategic Plan, Operational Excellence, OSP is interested in developing an AI tool to assist with contract review and negotiation in order to enhance the contract review process. There are multiple commercial options available (LegalSifter, Cobblestone, lexion.ai) but they are not cost-efficient. OSP believes a homegrown tool can be developed that would better address the University’s needs.
 
 The objective of this project is to develop an AI tool that can assist OSP contract negotiators in reviewing and negotiating research contracts. The AI tool will be designed to identify and flag legal and technical issues in the contracts, suggest potential revisions and provide guidance on negotiating terms.
 
-## System Metaphor
-This software will assist the Office of Sponsored Programs’ contract negotiators in researching and reviewing new research contracts. The system will assist in contract review by scanning contracts and highlighting language that conflicts with Auburn University’s acceptance criteria. Alongside detecting contractual issues, this program should provide alternative text to replace the problematic language with acceptable language and show Auburn’s justification for making said changes. This program should have the capability to learn from successful contract review negotiations to refine future performance. This program should also have functionality to measure the overall risk of a given contract based on attributes such as scope of work, contract partner, budget amount, quality of terms, etc. Combined, all of these tools will assist OSP’s contract reviewers in quickly identifying, assessing, and countering problematic contract terms, which will greatly increase the overall number of contracts the OSP can process.
+### Status of the Spring 2024 goals
+The Spring 2024 teams planned the features below. This table records what was actually built, so that the goals are not mistaken for existing functionality.
 
-## User Stories
-### 1. Contract Scanning
-- **Summary:** As a contract reviewer, I want a tool that reads agreements to find problematic language so that I can process a greater number of agreements.
-- **Description:** This feature should read an agreement and search for problematic language and clauses that may exist. The agreement should be compared to the FAR Matrix and the Contract T&Cs Matrix to flag unacceptable language or clauses for removal.
-
-### 2. Alternative Language
-- **Summary:** As a contract reviewer I want a tool that can provide alternative language for problematic language in a contract so that I do not have to manually search for the alternative language
-- **Description:** This feature should automatically generate alternative language for the contract reviewer to use when encountering problematic language/clauses. The alternative language should be based on existing approved AU alt language documents.
-
-### 3. Adjustment Justification
-- **Summary:** As a contract reviewer, I want a tool that can provide justifications for making changes to a contract so that I can save time editing contracts.
-- **Description:** This feature should automatically provide justifications for making changes/removals to an agreement based on Auburn’s T&Cs matrix.
-
-### 4. Adaptive Negotiating
-- **Summary:** As a contract reviewer, I want this program to learn from previous negotiations so that it can be more helpful to me in the future.
-- **Description:** This feature should look at past negotiations and learn from successes/failures regarding the programs generated response and use successful negotiations to improve future performance. For example, if there is a new Boeing negotiation, then the software would filter/recognize previous negotiations with Boeing.
-
-### 5. Automated Risk Assessment
-- **Summary:** As a contract reviewer, I want this program to give me an overall risk factor for a contract so that I can make appropriate risk assessments when negotiations reach an impasse.
-- **Description:** This feature should be able to collect all risk factors relevant for a given contract and provide relevant information to assist contract reviewers in a manual risk assessment. This functionality would assist in strategizing and guiding negotiations when there are atypical terms being negotiated.
-
-### 6. User Interface
-- **Summary:** As a contract reviewer, I want the user interface to make the contract scanning and analysis process as efficient and user-friendly as possible while maintaining clarity and simplicity.
-- **Description:** The user interface should provide an intuitive way of interacting with the components and features of the AI Based Contract Review program
+| Spring 2024 goal | Status |
+|---|---|
+| Contract scanning against the FAR and Ts&Cs matrices | Implemented (see "What the app currently does") |
+| Alternative language | Partial: the output shows the matrix's pre-written preferred language for each matched category; nothing is generated for the specific contract |
+| Adjustment justification | Partial: the output shows the matrix's "Why" text for each matched category |
+| Adaptive negotiating (learning from past negotiations) | Not implemented |
+| Automated risk assessment | Not implemented |
+| User interface | Implemented: a landing page with two scanners |
