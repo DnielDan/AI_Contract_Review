@@ -2,12 +2,16 @@
 docx2txt==0.8
 nicegui==1.4.23
 nltk==3.8.1
+olefile==0.47
 openpyxl==3.1.2
 pandas==2.2.2
-PyPDF2==3.0.1
+pypdf==6.19.0
 python-docx==1.2.0
 scikit-learn==1.4.2
 xlrd==2.0.2
+
+# Tests (run with: python -m pytest)
+pytest==9.1.1
 
 # Only needed for the desktop window (AICR_NATIVE=1)
 pywebview==6.2.1
