@@ -41,6 +41,8 @@ Agreement Scanner (`/subscanner`) at http://127.0.0.1:8080. Launch options are s
 python -m pytest
 ```
 
+The tests cover text extraction, matrix parsing, problem-language flagging, FAR clause highlighting, and a full scan of a sample contract. GitHub Actions runs them on Linux for every pull request and every push to `main` (`.github/workflows/tests.yml`); they run offline and never send contract text to an external service.
+
 ## Sample files
 Sample documents for trying each scanner are in `supplementary_files/samples_test_set/`:
 
