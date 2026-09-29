@@ -3,3 +3,17 @@
     margin: auto;
     max-width: 1000px;
 }
+
+.page-button {
+    border-radius: 20px;
+    color: #fff;
+    text-decoration: none;
+    height: 80%;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    padding: 30px;
+    text-align: center;
+}

@@ -10,6 +10,22 @@
 > that code is not part of this repository. See the team's Cycle 0 report for current status,
 > known limitations, and the active backlog.
 
+## Running the app
+Requires Python 3.11. Install dependencies with `pip install -r requirements-demo.txt`, then run:
+
+```
+python main.py
+```
+
+This serves the landing page, the AI Contract Scanner (`/contractscanner`), and the Subcontractor
+Agreement Scanner (`/subscanner`) at http://127.0.0.1:8080. Launch options are set with environment variables:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `AICR_HOST` | `127.0.0.1` | Address to listen on. Only use `0.0.0.0` once uploads are secured, since it exposes the app to the network. |
+| `AICR_PORT` | `8080` | Port to listen on. |
+| `AICR_NATIVE` | `0` | Set to `1` to open in a desktop window (requires `pywebview`) instead of the browser. |
+
 ## Overview 
 This is our Senior Design Project for Auburn University in Spring of 2024. We are tasked with working with Auburn's Office of Sponsored Programs (OSP) to develop a program that could take in a contract and automatically highlight all instances of problematic language/clauses that are contained within the contract. This program will allow the OSP's contract negotiators to be more efficient in how many contracts they are able to process and ultimately allow Auburn University to fulfill its mission of doubling research expenditures set by President Roberts. This tool is meant to be a home-grown and cost-effective tool that competes with commercial applications such as LegalSifter, Lexion.ai, Cobblestone, etc. This project consists of two teams, an orange team which is focusing on the core functionality of the document processing and flagging, and a blue team, which is focusing on the user interface and improving ease of use for the clients. This code originated from [Jarret's Best Effort: AI Based Contract Review](https://github.com/J-Hill22/AI-Based-Contract-Review/tree/Cycle3), the prior semesters progress towards fulfilling the client's requests.
 
