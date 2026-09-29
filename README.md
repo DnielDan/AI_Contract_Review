@@ -36,6 +36,11 @@ Agreement Scanner (`/subscanner`) at http://127.0.0.1:8080. Launch options are s
 | `AICR_PORT` | `8080` | Port to listen on. |
 | `AICR_NATIVE` | `0` | Set to `1` to open in a desktop window (requires `pywebview`) instead of the browser. |
 
+## Running the tests
+```
+python -m pytest
+```
+
 ## Sample files
 Sample documents for trying each scanner are in `supplementary_files/samples_test_set/`:
 
@@ -43,12 +48,13 @@ Sample documents for trying each scanner are in `supplementary_files/samples_tes
 |---|---|---|
 | AI Contract Scanner (`.docx`) | `0078-23 Adhikari - agreement.docx` | An annotated `<name>_scanned.docx` with flagged language and highlighted FAR clauses |
 | AI Contract Scanner (`.pdf`) | `0430-23 O'Brien - fully executed.pdf` | Same as above, from a PDF |
+| AI Contract Scanner (legacy `.doc`) | `Godwin - redline 12.5.23.doc` | Same as above, from a Word 97-2003 file |
 | Subcontractor Agreement Scanner | `24-00373 Subcontract Auburn University_FE (1).pdf` | "not flagged". This file is a subcontract, not an audit report, so it contains none of the audit-finding phrases the scanner looks for; a sample audit report is still needed to test the flagged case. |
 
-Legacy `.doc` files (such as `Godwin - redline 12.5.23.doc`) are not supported yet.
+`0264-23 Godwin - fully executed.pdf` is a scanned image with no text layer, so it produces an output with nothing flagged.
 
 ## What the app currently does
-- **AI Contract Scanner:** converts an uploaded `.docx` or `.pdf` to text, compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove).
+- **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text, compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove).
 - **Subcontractor Agreement Scanner:** searches an uploaded PDF for three audit-finding phrases (for example, "Material weaknesses identified? Yes") and reports flagged or not flagged.
 - The app does not currently use a large language model; all analysis is local pattern and similarity matching.
 

@@ -1,29 +1,24 @@
-from PyPDF2 import PdfReader
+from contract_to_txt import extract_pdf_text
 import mmap
+import os
 
 # Converts pdf to txt
 def pdf_to_txt(pdf_path):
-    no_ext = pdf_path[:-4]
-    txt_fname = no_ext + ".txt"
-
-    pdf_file_obj = open(pdf_path, 'rb')
-
-    pdf_reader = PdfReader(pdf_file_obj)
-
-    page_count = len(pdf_reader.pages)
-
-    page_obj = pdf_reader.pages[page_count - 1]
-
-    pdf_text = ''
-
-    for i in range(page_count - 1):
-        page_obj = pdf_reader.pages[i]
-        pdf_text += (page_obj.extract_text())
+    txt_fname = os.path.splitext(pdf_path)[0] + ".txt"
 
     with open(txt_fname, 'w', encoding="utf-8") as file:
-        file.write(pdf_text)
-    
+        file.write(extract_pdf_text(pdf_path))
+
     return txt_fname
+
+
+# Checks a PDF for audit findings without leaving a .txt copy of it behind
+def scan_for_findings(pdf_path):
+    txt_file = pdf_to_txt(pdf_path)
+    try:
+        return flag_findings(txt_file)
+    finally:
+        os.remove(txt_file)
 
 
 # Method that searches txt files for things in findings_list

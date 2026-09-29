@@ -44,8 +44,7 @@ def handle_sub_upload(e):
     name = e.name
     binary = e.content.read()
     upload_filepath = write_binary_to_temp_file(name, binary)
-    text_file_name = pdf_to_txt.pdf_to_txt(upload_filepath)
-    found = pdf_to_txt.flag_findings(text_file_name)
+    found = pdf_to_txt.scan_for_findings(upload_filepath)
     if found:
         ui.notify(name + " was flagged", type='negative')
     else:
@@ -66,7 +65,7 @@ def contract_scanner():
             ui.label('AI Contract Scanner').style('font-size: 22px; text-align: center')
             with ui.element().style('width: 100%; display: flex; justify-content: center;'):
                 ui.label('Office of Sponsored Programs').style('font-size: 18px;')
-    ui.upload(multiple=True, label="Upload Contracts", auto_upload=True, on_upload=handle_contract_upload).props(add="accept='.docx,.pdf'")
+    ui.upload(multiple=True, label="Upload Contracts", auto_upload=True, on_upload=handle_contract_upload).props(add="accept='.docx,.doc,.pdf'")
 
 
 async def handle_contract_upload(e):
