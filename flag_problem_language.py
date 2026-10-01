@@ -122,7 +122,7 @@ def load_tnc_matrix(tnc_path_in):
     return tnc_dictionary
 
 # Compares the entire contract to 'flagged_sentences' and inserts the relevant data
-# into the txt file below the matched flagged sentence
+# into the txt file below the matched flagged sentence. Returns the number of distinct sentences flagged.
 def _flag_problem_language(tnc_path_in):
     tnc_dictionary = load_tnc_matrix(tnc_path_in)
 
@@ -150,3 +150,5 @@ def _flag_problem_language(tnc_path_in):
     with open('flagged_contract_to_txt.txt', 'w', encoding = 'utf-8') as f:
         for eachline in modded_lines:
             f.write(eachline + '\n')
+
+    return len(flagged_sentences)

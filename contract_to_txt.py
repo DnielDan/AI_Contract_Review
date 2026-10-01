@@ -5,6 +5,10 @@ import olefile
 from docx import Document
 from pypdf import PdfReader
 
+# Raised for files the scanner cannot process; the message is shown to the user as-is
+class UnsupportedFileError(Exception):
+    pass
+
 # Some PDFs contain control characters that Word documents cannot store, which crashed the scan;
 # drop them, keeping tabs and line breaks
 _PDF_CONTROL_CHARACTERS = {code: None for code in range(32) if code not in (9, 10, 13)}
@@ -24,7 +28,7 @@ def extract_doc_text(doc_path):
         word_stream = ole.openstream('WordDocument').read()
         flags = struct.unpack_from('<H', word_stream, 0x0A)[0]
         if flags & 0x0100:
-            raise ValueError('Encrypted .doc files are not supported')
+            raise UnsupportedFileError('Password-protected .doc files are not supported.')
         table_stream = ole.openstream('1Table' if flags & 0x0200 else '0Table').read()
 
     # Locate the character count and piece table (Clx) through the File Information Block
@@ -41,7 +45,7 @@ def extract_doc_text(doc_path):
     while clx[i] == 0x01:
         i += 3 + struct.unpack_from('<H', clx, i + 1)[0]
     if clx[i] != 0x02:
-        raise ValueError('Unrecognized .doc file structure')
+        raise UnsupportedFileError('This .doc file could not be read. Try saving it as .docx in Word and uploading that.')
     piece_table_length = struct.unpack_from('<I', clx, i + 1)[0]
     piece_table = clx[i + 5:i + 5 + piece_table_length]
     piece_count = (piece_table_length - 4) // 12
@@ -131,4 +135,6 @@ def convert_to_txt(contract_in):
     elif extension == '.doc':
         _clean_doc(contract_in)
     else:
-        return ('Error: unexpected file type')
+        # Raising (rather than returning an error string) stops the scan here; otherwise the next
+        # step would read contract_to_txt.txt left over from the previous scan
+        raise UnsupportedFileError(f"'{extension or 'no extension'}' files are not supported. Upload a .docx, .doc, or .pdf file.")
