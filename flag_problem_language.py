@@ -123,12 +123,14 @@ def load_tnc_matrix(tnc_path_in):
 
 # Compares the entire contract to 'flagged_sentences' and inserts the relevant data
 # into the txt file below the matched flagged sentence. Returns the number of distinct sentences flagged.
-def _flag_problem_language(tnc_path_in):
+# The app passes paths inside the upload's own working directory; the defaults are the original filenames.
+def _flag_problem_language(tnc_path_in, contract_txt_path='contract_to_txt.txt',
+                           flagged_txt_path='flagged_contract_to_txt.txt'):
     tnc_dictionary = load_tnc_matrix(tnc_path_in)
 
-    flagged_sentences = flag_sentences(tnc_dictionary)
-    with open('contract_to_txt.txt', 'r', encoding = 'utf-8') as file:
+    with open(contract_txt_path, 'r', encoding = 'utf-8') as file:
         lines = file.read()
+    flagged_sentences = flag_sentences(tnc_dictionary, lines)
 
     token_lines = sent_tokenize(lines)
     modded_lines = []
@@ -147,7 +149,7 @@ def _flag_problem_language(tnc_path_in):
         if not matched:
             modded_lines.append(tokenized_line)
 
-    with open('flagged_contract_to_txt.txt', 'w', encoding = 'utf-8') as f:
+    with open(flagged_txt_path, 'w', encoding = 'utf-8') as f:
         for eachline in modded_lines:
             f.write(eachline + '\n')
 

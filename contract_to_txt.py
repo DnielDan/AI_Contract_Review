@@ -91,24 +91,24 @@ def _clean_word_text(text):
     return ''.join(output)
 
 # Removes blank lines and surrounding whitespace, then writes the text for the rest of the pipeline
-def _write_clean_text(raw_text):
+def _write_clean_text(raw_text, txt_path):
     lines = [line.strip() for line in raw_text.strip().split('\n')]
     cleaned_text = '\n'.join(line for line in lines if line)
 
-    with open('contract_to_txt.txt', 'w', encoding="utf-8") as file:
+    with open(txt_path, 'w', encoding="utf-8") as file:
         file.write(cleaned_text)
 
 # Function to process and clean the content of a DOCX file
-def _clean_docx(docx_path):
-    _write_clean_text(docx2txt.process(docx_path))
+def _clean_docx(docx_path, txt_path):
+    _write_clean_text(docx2txt.process(docx_path), txt_path)
 
 # Function to process and clean the content of a legacy DOC file
-def _clean_doc(doc_path):
-    _write_clean_text(extract_doc_text(doc_path))
+def _clean_doc(doc_path, txt_path):
+    _write_clean_text(extract_doc_text(doc_path), txt_path)
 
 # Function to process and clean the content of a PDF file
-def _clean_pdf(pdf_path):
-    with open('contract_to_txt.txt', 'w', encoding="utf-8") as file:
+def _clean_pdf(pdf_path, txt_path):
+    with open(txt_path, 'w', encoding="utf-8") as file:
         file.write(extract_pdf_text(pdf_path))
 
 # Function to convert a txt file to docx file
@@ -126,15 +126,16 @@ def txt_to_docx(txt_filepath, cleaned_docx_filepath):
     # Save the Document
     doc.save(cleaned_docx_filepath)
 
-def convert_to_txt(contract_in):
+# Writes the contract's text to txt_path; the app passes a path inside the upload's own working directory
+def convert_to_txt(contract_in, txt_path='contract_to_txt.txt'):
     extension = os.path.splitext(contract_in)[1].lower()
     if extension == '.pdf':
-        _clean_pdf(contract_in)
+        _clean_pdf(contract_in, txt_path)
     elif extension == '.docx':
-        _clean_docx(contract_in)
+        _clean_docx(contract_in, txt_path)
     elif extension == '.doc':
-        _clean_doc(contract_in)
+        _clean_doc(contract_in, txt_path)
     else:
         # Raising (rather than returning an error string) stops the scan here; otherwise the next
-        # step would read contract_to_txt.txt left over from the previous scan
+        # step would read text left over from an earlier scan
         raise UnsupportedFileError(f"'{extension or 'no extension'}' files are not supported. Upload a .docx, .doc, or .pdf file.")

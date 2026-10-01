@@ -32,7 +32,7 @@ Agreement Scanner (`/subscanner`) at http://127.0.0.1:8080. Launch options are s
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `AICR_HOST` | `127.0.0.1` | Address to listen on. Only use `0.0.0.0` once uploads are secured, since it exposes the app to the network. |
+| `AICR_HOST` | `127.0.0.1` | Address to listen on. `0.0.0.0` lets anyone on the network use the app; the app has no login yet (planned in US-8), so keep the default outside a controlled pilot. |
 | `AICR_PORT` | `8080` | Port to listen on. |
 | `AICR_NATIVE` | `0` | Set to `1` to open in a desktop window (requires `pywebview`) instead of the browser. |
 

@@ -1,6 +1,10 @@
 from nicegui import ui, run, app
+import glob
 import logging
 import os
+import re
+import shutil
+import tempfile
 from contract_to_txt import UnsupportedFileError, convert_to_txt, txt_to_docx
 from flag_FAR_clauses import annotate_contract
 from flag_problem_language import _flag_problem_language
@@ -12,6 +16,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SUPPLEMENTARY_DIR = os.path.join(BASE_DIR, "supplementary_files")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
+WORK_DIR_PREFIX = "scan_"  # each upload is processed in its own temp/scan_<random> directory
 
 # Append the custom path to the NLTK data path
 nltk.path.append(os.path.join(SUPPLEMENTARY_DIR, "nltk_data"))
@@ -56,13 +61,15 @@ def subcontract_scanner():
 
 def handle_sub_upload(e):
     name = e.name
-    binary = e.content.read()
-    upload_filepath = write_binary_to_temp_file(name, binary)
+    work_dir = new_work_dir()
     try:
+        upload_filepath = write_binary_to_temp_file(name, e.content.read(), work_dir)
         found = pdf_to_txt.scan_for_findings(upload_filepath)
     except Exception as error:
         ui.notify(failure_message(name, error), type='warning', multi_line=True, timeout=0, close_button=True)
         return
+    finally:
+        remove_work_dir(work_dir)
     if found:
         ui.notify(name + " was flagged", type='negative')
     else:
@@ -88,31 +95,41 @@ def contract_scanner():
 
 async def handle_contract_upload(e):
     name = e.name
-    binary = e.content.read()
-    upload_filepath = write_binary_to_temp_file(name, binary)
-    downloads_path = os.path.join(os.environ['USERPROFILE'], 'Downloads')
-    output_filepath = os.path.join(downloads_path, f"{getFilenameStringNoExtension(name)}_scanned.docx")
-    ui.notify("Scanning file...")
+    work_dir = new_work_dir()
     try:
-        flagged_count = await run.cpu_bound(scan_file, upload_filepath, output_filepath)
-    except Exception as error:
-        ui.notify(failure_message(name, error), type='warning', multi_line=True, timeout=0, close_button=True)
-        return
-    os.remove(upload_filepath)
+        upload_filepath = write_binary_to_temp_file(name, e.content.read(), work_dir)
+        output_name = f"{getFilenameStringNoExtension(safe_filename(name))}_scanned.docx"
+        output_filepath = os.path.join(work_dir, output_name)
+        ui.notify("Scanning file...")
+        try:
+            flagged_count = await run.cpu_bound(scan_file, upload_filepath, output_filepath)
+        except Exception as error:
+            ui.notify(failure_message(name, error), type='warning', multi_line=True, timeout=0, close_button=True)
+            return
+        with open(output_filepath, 'rb') as file:
+            scanned_document = file.read()
+    finally:
+        # Nothing from this upload stays on the server, whether the scan succeeded or failed
+        remove_work_dir(work_dir)
     if flagged_count:
         ui.notify(f"{name}: {flagged_count} passage(s) of potential problem language flagged. Downloading scan.", type='negative')
     else:
         ui.notify(f"{name}: no problem language found. Downloading scan (FAR clauses are still highlighted).", type='positive')
-    ui.download(output_filepath)
+    # Sent as bytes over this user's own connection, so no URL is created that someone else could open
+    ui.download(scanned_document, output_name)
 
-# Scans a contract and writes the annotated copy; returns the number of passages flagged
+# Scans a contract and writes the annotated copy; returns the number of passages flagged.
+# Intermediate files go in the same directory as output_filepath, so concurrent scans never share files.
 def scan_file(filepath, output_filepath):
+    work_dir = os.path.dirname(os.path.abspath(output_filepath))
+    contract_txt = os.path.join(work_dir, 'contract_to_txt.txt')
+    flagged_txt = os.path.join(work_dir, 'flagged_contract_to_txt.txt')
+    file_to_highlight = os.path.join(work_dir, 'flagged_contract_to_docx.docx')
+
     # clean docx and annotate it
-    convert_to_txt(filepath)
-    flagged_count = _flag_problem_language(TNC_MATRIX_PATH)
-    back_to_docx = 'flagged_contract_to_txt.txt'
-    file_to_highlight = 'flagged_contract_to_docx.docx'
-    txt_to_docx(back_to_docx, file_to_highlight)
+    convert_to_txt(filepath, contract_txt)
+    flagged_count = _flag_problem_language(TNC_MATRIX_PATH, contract_txt, flagged_txt)
+    txt_to_docx(flagged_txt, file_to_highlight)
 
     annotate_contract(FAR_CLAUSE_MATRIX_PATH, file_to_highlight, output_filepath)
     return flagged_count
@@ -125,8 +142,32 @@ def getFilenameStringNoExtension(filename):
         temp_list.pop()
         return '.'.join(temp_list)
 
-def write_binary_to_temp_file(name, binary):
-    filepath = os.path.join(TEMP_DIR, name)
+# Returns a version of an uploaded filename that is safe to write: any folder part is dropped
+# (so "../../main.py" cannot escape the working directory) and unusual characters are replaced
+def safe_filename(name):
+    base = os.path.basename(name.replace("\\", "/"))
+    base = re.sub(r"[^A-Za-z0-9._ ()'-]", "_", base).strip(" .")
+    stem, extension = os.path.splitext(base)
+    return (stem[:100] + extension[:10]) or "upload"
+
+# Creates a private working directory for one upload, inside TEMP_DIR
+def new_work_dir():
+    os.makedirs(TEMP_DIR, exist_ok=True)
+    return tempfile.mkdtemp(prefix=WORK_DIR_PREFIX, dir=TEMP_DIR)
+
+def remove_work_dir(work_dir):
+    try:
+        shutil.rmtree(work_dir)
+    except OSError:
+        logger.warning("Could not delete working directory %s; it will be removed on the next restart", work_dir, exc_info=True)
+
+# Removes working directories left behind if the app stopped in the middle of a scan
+def remove_stale_work_dirs():
+    for work_dir in glob.glob(os.path.join(TEMP_DIR, WORK_DIR_PREFIX + "*")):
+        remove_work_dir(work_dir)
+
+def write_binary_to_temp_file(name, binary, work_dir):
+    filepath = os.path.join(work_dir, safe_filename(name))
     with open(file=filepath, mode="wb") as file:
         file.write(binary)
     return filepath
@@ -151,7 +192,10 @@ def index():
 
 if __name__ in {"__main__", "__mp_main__"}:
     app.add_static_files("/static", STATIC_DIR)
-    app.add_static_files("/temp", TEMP_DIR)
+    # temp/ is deliberately not served: it holds uploaded contracts while they are scanned.
+    # on_startup runs once in the server process only, never in the scan worker processes,
+    # so it cannot delete the working directory of a scan in progress.
+    app.on_startup(remove_stale_work_dirs)
     if NATIVE:
         ui.run(native=True, reload=False, port=PORT)
     else:
