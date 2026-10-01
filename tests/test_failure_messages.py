@@ -21,10 +21,8 @@ def notifications(monkeypatch, tmp_path):
     """Captures ui.notify calls and keeps uploads and outputs inside tmp_path."""
     sent = []
     monkeypatch.setattr(main.ui, "notify", lambda message, **options: sent.append((message, options.get("type"))))
-    monkeypatch.setattr(main.ui, "download", lambda path: sent.append(("download", path)))
+    monkeypatch.setattr(main.ui, "download", lambda src, filename=None: sent.append(("download", filename)))
     monkeypatch.setattr(main, "TEMP_DIR", str(tmp_path))
-    (tmp_path / "Downloads").mkdir()
-    monkeypatch.setenv("USERPROFILE", str(tmp_path))
     monkeypatch.chdir(tmp_path)
 
     async def run_inline(function, *args):
@@ -83,7 +81,11 @@ def test_contract_scan_failure_is_reported(notifications):
 
 @pytest.mark.parametrize("flagged, expected", [(0, "no problem language found"), (3, "3 passage(s) of potential problem language flagged")])
 def test_successful_scan_says_whether_anything_was_found(notifications, monkeypatch, flagged, expected):
-    monkeypatch.setattr(main, "scan_file", lambda path, output: flagged)
+    def fake_scan(path, output):
+        with open(output, "wb") as file:
+            file.write(b"annotated")
+        return flagged
+    monkeypatch.setattr(main, "scan_file", fake_scan)
     asyncio.run(main.handle_contract_upload(FakeUpload("contract.docx", b"stand-in")))
     assert any(expected in m for m, _ in notifications)
     assert notifications[-1][0] == "download"
