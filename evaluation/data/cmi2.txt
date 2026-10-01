@@ -1,0 +1,171 @@
+SUBCONTRACT AGREEMENT NO. 2024-ARL-PROJECT-EMERGENCE-AUBURN-001
+This SUBCONTRACT AGREEMENT (hereinafter referred to as the “Subcontract Agreement”) is made as made this 20th day of March, 2024 (“Effective Date”) by and between Civil-Military Innovation Institute, Inc. (hereinafter referred to as “Prime Contractor” “CMI2” or “Company”) a West Virginia non-profit corporation with offices located at 3592 Collins Ferry Rd, Suite 200, Morgantown, West Virginia, 26505; and Auburn University (hereinafter referred to as “University” or “Subcontractor”), a public higher education institution and instrumentality of the State of Alabama, having administrative offices located at 540 Devall Drive, Auburn, AL 36832 (hereinafter referred to collectively as the “Parties” and each, individually, a “Party”).
+WITNESSETH:
+WHEREAS, Company has entered into a Contract with the United States Department of the Army’s ACC-APG Adelphi Division of Army Research Lab numbered W911QX23C0011 for a research and development effort to develop, validate, and demonstrate an emerging technology identification and experimentation methodology (“Project Emergence”) (hereinafter referred to as the “Client Contract”); and 
+WHEREAS, Company desires to issue a Subcontract Agreement under the Client Contract to the Subcontractor for certain services as more fully described in the Statement of Work, “Attachment A” to this Agreement, (hereinafter referred to as the “Services”), and 
+WHEREAS, the Subcontractor – with an active Commercial and Government Entity code of 8H404 from the United States Government’s System for Award Management desires to accept a subcontract for the performance of the Services subject to the terms and conditions as contained in this Subcontract Agreement.  
+NOW, THEREFORE, in consideration of the premises and mutual covenants contained herein, the Parties mutually agree as follows:
+ARTICLE I
+TASK ORDERS & SERVICES
+The Subcontractor shall furnish the necessary personnel, materials and other services necessary for or incidental to the performance of this Subcontract Agreement in accordance with the Statement of Work - Attachment A. Subcontractor further agrees to provide the Services identified in each task order (“Task Order”), which shall be consistent with the Statement of Work and incorporated by reference into this Subcontract Agreement as part of Attachment A once signed by the Parties. The issuance of Task Orders will be in the sole and absolute discretion of CMI2.  Nothing in this Subcontract obligates CMI2 to issue a Task Order or is a guaranty that CMI2 will issue one or more Task Orders. Similarly, the Subcontractor shall not be under any obligation to accept any Task Order.
+If and when issued, each Task Order shall provide, at a minimum, the following data:
+1. Statement of Work or Description of Services; 
+2. Deliverables and Schedules;
+3. Period of Performance or Duration of the Service;
+4. Funding for Task Order and Milestones for Invoicing under Task Order (including available funding, if incrementally funded); and 
+5.  A list of Government-Furnished Information Marked with Restrictive Legends, if applicable.
+All Task Orders incorporate the terms and conditions of this Subcontract, whether stated explicitly or not. In the event of conflict or inconsistency between a Task Order and this Subcontract, the terms and conditions of this Subcontract shall take precedence, unless specifically stated otherwise in the Task Order.
+ARTICLE II
+CHANGES IN KEY SUBCONTRACTOR PERSONNEL
+If, during the term of the Subcontract Agreement it becomes necessary to replace and/or reassign key Subcontractor personnel, the Subcontractor shall obtain the written approval of the Company thirty (30) calendar days prior to initiating any such replacement and/or reassignment. 
+For the purpose of this ARTICLE, the term “key subcontractor personnel” shall be identified in the proposal and corresponding Task Order.
+ARTICLE III
+DELIVERABLES
+The Subcontractor shall generate the deliverables required in accordance with the Statement of Work – Attachment A and as set forth in each Task Order. 
+ARTICLE IV
+PERIOD OF PERFORMANCE
+The period of performance of this Subcontract Agreement shall be from March 20, 2024 to March 20, 2025. The Period of Performance of any Task Order shall be as set forth therein. This Subcontract Agreement may be extended, renewed, or otherwise amended at any time by the mutual written consent of authorized representatives of the parties.
+ARTICLE V
+FIRM FIXED PRICE
+Subcontractor shall furnish the Services as set forth in Attachment A – Statement of Work and further identified in each Task Order. CMI2 shall not pay Subcontractor and Subcontractor shall not claim any amount(s) greater than specified in the Task Order, absent a written modification thereto.
+ARTICLE VI
+SUBCONTRACTOR INVOICES
+Subcontractor shall prepare each invoice and submit to CMI2 at ahanasky@cmi2.org with a copy 
+accounting@cmi2.org and jclevenger@cmi2.org. 
+Subcontractor shall submit each applicable invoice in accordance with the dates identified in each Task Order. CMI2 shall verify invoices according to invoicing instructions and accuracy of the amount invoiced for work performed by Subcontractor. CMI2 shall return to Subcontractor for correction, resubmission, and approval any invoice that is improper, inaccurate, or not submitted in accordance with the invoicing instructions in this Agreement.
+Subcontractor shall prepare invoices containing the following information: 
+Subcontract Agreement number;
+Description of work performed;
+Deliverables produced/delivered;
+Date of invoice submission;
+Invoiced amount for the period; and
+Cumulative amount invoiced for on the Task Order.
+ARTICLE VII
+PAYMENT
+ 
+During the period of performance of this Subcontract Agreement, and subject to the terms and conditions of all attachments and exhibits, attached hereto or incorporated herein by reference, the Subcontract Agreement shall be paid based upon the successful completion of the Services as set forth in the Statement of Work and upon the submission of properly certified invoices and their subsequent approval by Company.  Company’s payment terms are ten (10) business days of receiving payment from the Government of the approved invoice.
+Payment information for the Subcontractor 
+Recipient Name: Auburn University
+Recipient Address: 
+Bank Name: 
+Bank Address: 
+Routing Number: 
+Account Number: 
+Form of Payment: ACH
+Subcontractor consents to electronic payment by the process and to the account indicated above.
+ARTICLE VIII 
+CHANGES
+Except as specified below, no order, statement, or conduct of Company technical personnel who visit the Subcontractor's facilities or in any other manner communicates with Subcontractor personnel during the performance of this Subcontract Agreement shall constitute a change under the “Changes” clause of this Subcontract Agreement.
+The Subcontractor shall not comply with any order, direction, or request of Company personnel unless it is issued in writing and signed by a Company or other duly authorized representative from the Company.  
+ARTICLE IX
+ADDITIONAL PROVISIONS
+If applicable, ATTACHMENT C, ADDITIONAL PROVISIONS to this Subcontract Agreement contains a listing of the ADDITIONAL PROVISIONS applicable to this Subcontract Agreement.  Other additional clauses, as may be required from time to time by the U.S. Government, will be incorporated by modification to this Subcontract Agreement after review and acceptance by Subcontractor. These ADDITIONAL PROVISIONS shall have the same force and effect as if set forth in their entirety.  If any of the ADDITIONAL PROVISIONS do not apply to this specific Subcontract Agreement, such clauses shall be deemed self-deleting. Where necessary to make the referenced clauses applicable to this Subcontract Agreement, the term "Government," "Contracting Officer" and equivalent terms shall mean the Company and the term "Contractor" shall mean "Subcontractor."  SUCH SUBSTITUTION SHALL NOT APPLY TO FAR CLAUSE NO. 52.215-2, AUDIT-NEGOTIATION.
+ARTICLE X 
+  RELATIONSHIP OF PARTIES
+It is the express intention of the Parties that in all matters, the Parties will act as "Independent Contractors” and not as an employee, agent, joint venture, or partner of the other Party.  Nothing in this Agreement shall be interpreted or construed as creating or establishing the relationship of employer and employee between the Parties, and that:
+The employees or agents of one Party will not be deemed to be employees or agents of the other for any purpose under any federal or state law, including, but not limited to Unemployment Insurance Law, Old Age Benefits Law or Social Security Law, Workman's Compensation Law, or under Internal Revenue or War Tax Legislation, or under any industrial law or otherwise.
+That neither Party will have any right, power, or authority to create any obligation, express or implied, on behalf of the other except to the extent provided herein.
+The Subcontractor assumes full responsibility for the actions of its employee (s) or agent (s) while performing Services pursuant to this Subcontract Agreement, and shall be solely responsible for their supervision, daily direction and control, and payment of salary.
+ARTICLE XI
+INSURANCE
+The Subcontractor shall secure and maintain insurance coverage no less than that was in effect 
+on the Effective Date of this Subcontract Agreement and maintain the same through the period of performance. Documentation evidencing such insurance coverage shall be provided to Company upon request. 
+ARTICLE XII
+APPLICABLE LAW AND DISPUTES
+Each Party agrees to timely notify the other Party of any claim, dispute or cause of action arising under or related to this Subcontract Agreement, and to negotiate in good faith to resolve any such claim, dispute or cause of action.  To the extent that such negotiations fail, the Parties agree that any lawsuit or cause of action brought by one Party against the other that arises out of or is related to this Subcontract Agreement shall be filed in and litigated only with a court of competent jurisdiction.
+Notwithstanding other provisions in this Subcontract Agreement, any decision of the Contracting Officer under the applicable prime contract, which binds Company shall bind both Company and the Subcontractor to the extent that it relates to this Subcontract Agreement, provided (1) Company promptly notifies the Subcontractor of this decision, and (2) if requested by the Subcontractor, Company appeals the decision in accordance with the Disputes Clause of the applicable prime contract incorporated herein by reference.
+Any decision on the appeal, or any other decision of the Government under the applicable prime contract that is binding on Company and cannot be appealed under the Disputes clause of the applicable prime contract, shall also bind Company and the Subcontractor to the extent that it relates to this Subcontract Agreement, provided Company promptly notifies Subcontractor of the decision and, if Subcontractor requests, brings suit or files a claim, as appropriate, against the Government.  A final judgment in the suit shall be conclusive upon Company and the Subcontractor.
+If any appeal, suit, or claim is prosecuted by Company under this ARTICLE, the Subcontractor shall be permitted to participate fully in the prosecution for the purpose of protecting its interest.  If requested by Company, Subcontractor shall assume the burden of prosecuting for Company any appeal, suit, or claim initiated by Company at the Subcontractor's request.  Each party shall cooperate fully in assisting the other party in the proceedings.  Company agrees that, unless Subcontractor consents, it will not enter into a settlement agreement with the Government, or take any other action that would prejudice Subcontractor's right under this ARTICLE.
+Pending any decision, appeal, suit, or claim pursuant to this ARTICLE, the Subcontractor shall proceed diligently with performance of this Subcontract Agreement.  All costs and expenses incurred by the Subcontractor and Company in prosecuting any appeal, suit, or claim initiated by Company at the Subcontractor's request shall be paid by the Subcontractor.  The rights and obligations of Company and Subcontractor under this Subcontract Agreement shall survive completion of, and final payment under, this Subcontract Agreement.
+No determination by Company of a question affecting the Subcontractor's rights shall be considered final or conclusive, or prejudice any legal rights of the Subcontractor, without the Subcontractor's consent.  Any provision in this Subcontract Agreement requiring determinations or approvals of the Contracting Officer are intended to implement the requirement of the applicable prime contract and Company agrees that any question requiring this determination or approval will be referred to the Contracting Officer as a matter arising under the applicable prime contract.
+ARTICLE XIII
+CONFIDENTIAL INFORMATION
+Obligations of confidentiality under this Agreement shall be in accordance with ATTACHMENT B, NON-DISCLOSURE AGREEMENT and as established therein, shall survive termination of this Agreement.
+ARTICLE XIV
+RELEASE OF NEWS INFORMATION
+No news release, including photographs and films, public announcements, denial, or confirmation of same, or any part of the subject matter of this Subcontract Agreement or any phase of any program hereunder shall be made without prior written approval of the Company. Neither party, however, shall be precluded from revealing the contents of this Subcontract Agreement to the Government or pursuant to any operation of law.
+ARTICLE XV
+USE OF NAME
+The Company name or any facsimile thereof shall not be used by the Subcontractor for purposes of advertising, sales, promotion, or publicity without Company’s prior written consent.
+ARTICLE XVI
+COVENANT AGAINST HIRING
+During the term of this Subcontract Agreement, including any extension or renewal thereof, and for a period of one (1) year thereafter, neither party will knowingly solicit for hire any technical or professional employee of the other assigned to the Program without the prior written consent of the other party.
+Notwithstanding the foregoing, this covenant shall not apply in the event this Subcontract Agreement is terminated by either party for default in accordance with the default or termination provision contained in this Agreement.  In addition, this clause is not intended to restrict employees of either party from responding to employment advertisements and voluntarily applying for available employment in either party's company. 
+ARTICLE XVII
+COMMUNICATIONS WITH CLIENT
+Subcontractor acknowledges that the Company is the primary interface with the Client relative to the work performed under this Agreement and that only the Company may direct Subcontractor performance under this Subcontract Agreement. The Company shall conduct any and all communications with Client related to this Agreement, except as the parties may agree, in writing or as allowed by the FAR. Subcontractor shall not initiate any direct contacts with Client concerning the work performed under this Agreement or the terms and conditions of the Agreement. Company acknowledges that Subcontractor may have continuing relationships with Client on other programs and may receive inquiries regarding this Agreement. Any relevant communications initiated by Client directly with Subcontractor concerning any matter involving the work performed under this Agreement is not a breach of this Agreement, provided that Subcontractor immediately reports such communication to the Company and in no case in less than one (1) business day. 
+ARTICLE XVIII
+TERMINATION FOR CONVENIENCE
+Either Party may terminate this Subcontract Agreement or given Task Order at any time, with or without cause, upon written notification to the other party at least thirty (30) days prior to the effective date of termination. Any reasonable non-cancellable commitments incurred by the Subcontractor in the performance of the Services as of the date of termination, shall be paid by Company. Termination of this Subcontract Agreement shall automatically terminate all Task Order thereunder. 
+ARTICLE XIX
+FORCE MAJEURE
+Neither Party shall be liable to the other for any loss, claim or damage as a result of any delay or failure in the performance of any obligation hereunder, directly, or indirectly caused by or resulting from: acts of the government; acts of God; acts of third persons; strikes, embargoes, delays in the mail, transportation and delivery, power failures and shortages; fires; floods; epidemics and unusually severe weather conditions; or other causes beyond the control of such Party.
+ARTICLE XX
+LIABILITY OF SUBCONTRACTOR
+ 
+Each Party assumes and agrees to be solely responsible for all liability arising from its own, and its employees’ or representatives’ negligence or willful misconduct in connection with this Subcontract Agreement, and agrees to indemnify, defend and hold harmless the other party, its directors, trustees, officers and employees against any liability, damage, loss or expense including reasonable attorneys’ fees and expenses of litigation incurred in connection with any claims, suits, actions, or demands arising out of such liability.
+Subcontractor makes no warranty or guarantee of any kind in conjunction with the Reports, Intellectual Property or any other deliverables provided by the Subcontractor under this Subcontract Agreement, and Subcontractor disclaims all warranties, including those of merchantability and fitness for a particular purpose, with respect to any information, design, specification, prototype or any other item furnished to Sponsor, or to others at Company’s request, in connection with this Subcontract Agreement or the subject thereof.
+DISCLAIMER.  IN NO EVENT SHALL EITHER PARTY OR ITS AFFILIATES BE LIABLE TO ANY OTHER PARTY FOR ANY SPECIAL, INDIRECT, INCIDENTAL, PUNITIVE, TREBLE OR CONSEQUENTIAL DAMAGES INCLUDING LOST PROFITS, WHETHER BASED ON CONTRACT, TORT OR ANY OTHER LEGAL THEORY.
+ARTICLE XXI
+WAIVER OF BREACH
+Any waiver by Company of any breach of any term or condition of this Subcontract Agreement shall not constitute a waiver of any subsequent breach of the same, or of a breach of any other term or condition hereof.
+ARTICLE XXII
+COMPLIANCE
+In the performance of this Subcontract Agreement, the Subcontractor agrees to comply with all applicable federal, state and/or local laws, regulations or ordinances in effect or hereafter adopted.
+ARTICLE XXIII
+ASSIGNMENT
+The Subcontractor may not assign or transfer it duties, interests, or obligations under this Agreement without obtaining the prior written approval of the Company.  The Company reserves the right to assign all of its rights, powers, and privileges under this Subcontract Agreement for any reason, including without limitation, the right to assign this Subcontract Agreement, in whole or in part, to: (1) any wholly-owned subsidiary of the Company; or (2) any successor of the Company by way of merger.
+ARTICLE XXIV
+NOTICES
+All notices to be given to the parties hereto shall be in writing unless otherwise stated and shall be properly given when delivered to the specified address and left with a responsible person or when sent by registered or certified mail addressed to the parties at their respective addresses herein below given, or to such other addresses as either party shall have notified the other, in like manner, to be its proper business address.  The date of notice shall be deemed, when notice is mailed, to be the date of mailing, so long as the Postal Service certifies the actual delivery; a refusal of certified notice shall constitute actual delivery hereunder.
+Company:      Subcontractor: 
+Civil-Military Innovation Institute  Auburn University
+3592 Collins Ferry Road, Suite 200  540 Devall Drive, Suite 200
+Morgantown, WV  26505   Auburn, AL 36832
+Attention: Adam Hanasky   Attention: Darren May
+Phone: 304.685.4883    Phone: 334.844.4438                                                            
+Email: ahanasky@cmi2.org     Email: ospadmn@auburn.edu 
+       
+ARTICLE XXV
+SEVERABILITY
+In the event any one or more of the ARTICLES or provisions of this Subcontract Agreement shall be held to be invalid, illegal, or unenforceable for any reason or in any respect, the validity, legality and enforceability of the remaining ARTICLES and provisions shall not in any way be affected or impaired thereby.
+ARTICLE XXVI
+RIGHTS IN DATA
+Subject to the Rights in Data provisions of the Additional Provisions, The Subcontractor will retain, without charge to Company, all pertinent technical data, including records relating to the Services performed hereunder for a period of five years following submission of a final report to Company.  During the five  (5 ) year retention period, the records will be made available Company at all reasonable times upon reasonable notice to the Subcontractor. Other data retention requirements may be listed in the task order. 
+ARTICLE XXVII
+PATENT RIGHTS
+Subject to rights and obligations of the United States Government under CMI2’s prime award W911QX23C0011, and per the Identification and Insertion of Restrictions on the Government’s Use, Release, or Disclosure of Technical Data or Computer Software submitted by Subcontractor with their Proposal, the Parties agree that any invention or inventions arising out of the performance of the Parties under this Subcontract Agreement that are solely conceived or reduced to practice by the Subcontractor will remain the property of the Subcontractor.  Further, the Parties agree that any invention or inventions arising out of the performance of the Parties under this Subcontract Agreement that are solely conceived or reduced to practice by Company will remain the property of Company.  In addition, the Parties agree that any invention or inventions arising out of the performance of the Parties under this Subcontract Agreement that are jointly conceived or jointly reduced to practice by the Parties hereto will be jointly owned with the Subcontractor and Company having equal proprietary rights.  In the event either the Subcontractor or Company disagrees with equal ownership of such inventions, the Parties agree to enter into negotiations in order to establish their respective rights.  In the case of a jointly conceived or jointly reduced invention or inventions, Company will lead any patent filing or protection activities.  Thereafter, the Subcontractor, upon request, shall provide reasonable assistance to Company's patent attorney or agent in connection with the prosecution of any patent applications.  In such event, the Parties specifically agree that any expenses incurred by the Subcontractor, such as charges for staff costs, travel, and other expenses incurred in connection with any assistance requested by Company, Company’s patent attorney or agent in the preparation and prosecution of patent applications, shall not be reimbursed to the Subcontractor by Company, as the Subcontractor shall have equal proprietary rights, and, thus, an interest in the patent filing or protection activities.
+ARTICLE XXVIII
+EXPORT CONTROL
+The Parties shall comply with the United States laws and regulations controlling the export of technical data, computer software, laboratory prototypes and other commodities, and agree that its obligations hereunder are contingent on compliance with applicable U.S. export laws and regulations (including the Arms Export Control Act, as amended, Export Administration Regulations (EAR) as codified in 15 Code of Federal Regulations, and Office of Foreign Assets Control Regulations). If either Party desires to export any technical data, computer software, laboratory prototypes and/or other commodities controlled by the U.S. export laws to the other Party, the exporting Party shall obtain the required authorization from the Government. 
+ARTICLE XXIX
+MERGER AND SEVERABILITY
+This Subcontract Agreement represents the entire and integrated agreement between the Subcontractor and Company, and supersedes all prior negotiations, representations, proposals, agreements, or communications whether written or oral.  This Subcontract Agreement may be amended only by written instrument signed by duly authorized representatives of both the Subcontractor and Company.
+ARTICLE XXX
+CANCELLATION IN THE EVENT OF SUBCONTRACTOR'S BANKRUPTCY
+In the event of the bankruptcy or insolvency of the Subcontractor, or of any assignment by the Subcontractor for the benefit of its creditors, Company shall have the right to cancel this Subcontract Agreement.
+ARTICLE XXXI
+COUNTERPARTS
+This Subcontract Agreement may be executed simultaneously in two or more counterparts, each of which shall be deemed an original, but all, which together shall constitute one and the same instrument.
+ARTICLE XXXII
+BINDING AGREEMENT
+This Subcontract Agreement shall be binding upon the Subcontractor’s executors, administrators, and legal representatives, and shall inure to the benefit of and be binding upon the Company, its successors, and assigns.
+ARTICLE XXXIII
+ DOCUMENTS COMPRISING THIS SUBCONTRACT AND THEIR
+ ORDER OF PRECEDENCE
+In the event of an inconsistency in this Subcontract Agreement, unless otherwise provided herein, the inconsistency shall be resolved by giving precedence in the following order to the documents that comprise this Subcontract Agreement:
+Subcontract Agreement
+Additional Provisions – Attachment C
+Statement of Work – Attachment A (including any associated Task Orders)
+Mutual Non-Disclosure Agreement – Attachment B
+ARTICLE XXXIII
+ENTIRE AGREEMENT
+This Subcontract Agreement, as may be modified by mutual agreement of the Parties, constitutes the entire understanding of the Parties and supersedes any previous communications, oral or written, between the Parties.  No change or modification of this Subcontract Agreement shall be valid unless in writing and signed by a duly authorized representative of each Party.  There are no understandings, agreements, representations or warranties, express or implied, which are not specified herein respecting the subject matter hereof.
+IN WITNESS WHEREOF, the Parties hereto have executed this Subcontract Agreement and made it effective as of the data upon the date first set forth above.
+CIVIL-MILITARY INNOVATION  AUBURN UNIVERSITY
+INSTITUTE, INC.     (“Subcontractor”)    
+(“Company”)      
+By:                    By: ________________________________
+Name: ______________________________  Name: ______________________________ 
+Title: _______________________________  Title: _______________________________
+Date: _______________________________  Date: _______________________________         

@@ -1,0 +1,434 @@
+Subcontract Under a Federal Contract
+No. 24-00373 (“Subcontract”)
+Under Advanced Technology International (ATI) (“Awarding Agency”) 
+AMTC-20-02-053 (“Prime Contract”)
+This Subcontract is entered into by and between the parties named below, for the performance of a portion of the Statement of Work originally awarded to the Contractor under the Prime Contract. The parties agree to the following terms and conditions:
+Prime Contractor (“Contractor”)
+Subcontractor (“Subcontractor”)
+Name: Wichita State University
+Name: Auburn University
+Address: 1845 Fairmount, Wichita, KS 67260-0093
+Address: 540 Devall Dr, Suite 200 Auburn AL 36832-5888
+DUNS:  053078127
+DUNS:  066470972
+Prime Contractor PI Name:  John S. Tomblin, Ph.D.
+Subcontractor PI Name: Suhasini Gururaja
+Subcontract Period of Performance:
+Contract Value: 
+Start: 22 Sept 23
+End: 21 Sept 24
+Funding This Action: $99,859
+Total Funding to Date: $99,859
+Anticipated Total Contract Value: $99,859 
+Subcontract Type: Cost Reimbursable 
+Project Title: Influence of Process-Induced Defects on Mode I Fracture Resistance of Laminated Composites – Phase II
+Subcontractor’s Work: Subcontractor will be responsible for the services as outlined in the Statement of Work (“SOW”) attached hereto as Attachment 4 and related tasks as are assigned by Subcontractor staff in writing, which are made a part of this Subcontract by this specific reference (“Services”).
+Limitation on Costs: Contractor is not liable for any cost in excess of the amount listed above without prior formal modification to this Subcontract. 
+Payment:  Subcontractor shall submit invoices in the format of the Sample Invoice at Appendix A or in a similar format consistent with Subcontractor’s approved accounting system for the purposes of reimbursement. Invoices must be prepared in a manner and in sufficient detail to support all costs incurred during the invoice period and cumulative to date. Invoices must meet specific invoicing requirements to the separate funding sources. A detailed itemization of actual expenses incurred during the invoice period must be attached to each invoice upon request by Contractor.  Individual expense items must be supported by a copy of receipt or vendor invoice and retained by Subcontractor. Invoices that do not provide said information may be returned to Subcontractor.  Subcontractor must submit an invoice and any applicable cost share contribution for allowable costs incurred no later than the fifteenth business day after the end of each month as directed under Appendix A. Invoices shall not be submitted more frequently than monthly except for final invoices. Subcontractor will mark "Final Invoice" on the final invoice submitted under this Subcontract. The final reporting, if required, from Subcontractor to Contractor shall be submitted before thirty (30) days after the period of performance.  All invoices shall contain the following certification as to truth and accuracy of invoice: “By signing this report, I certify to the best of my knowledge and belief that the report is true, complete and accurate, and the expenditures, disbursements and cash receipts are for the purposes and intent set forth in the award documents.” Invoices that do not reference Subcontract Number may be returned to Subcontractor. Invoices and questions concerning invoice receipt or payments should be directed to the appropriate party's Invoice Point of Contact as shown in Attachments 3A & 3B.  All payments shall be considered provisional and subject to adjustment if adjustment is necessary as a result of an adverse audit finding against Subcontractor. Contractor reserves the right to reject any invoice that does not comply with the terms of this Subcontract. Subcontractor shall have the right to submit a correct invoice. A corrected invoice should be submitted as soon as possible, and no later than thirty (30) days following the end of the Period of Performance. Payment shall be due net forty-five (45) days from the date of an acceptable invoice.
+Incorporation of Terms and Conditions: The documents set forth in Section 5 below (the “Attachments”) are attached hereto and hereby incorporated in their entirety as if fully set forth herein.
+Order of Precedence: Any inconsistencies in this Subcontract shall be resolved by giving precedence in the following order:
+This Document and Attachment 1, “Representations and Certifications;” 
+Attachment 7, “State of Kansas Contractual Provisions Attached DA-146a (Rev. 03-22);”
+Attachment 6, “Prime Contractor Cooperative Agreement Flowdown Clauses (hereinafter “Prime Contract Terms and Conditions”);
+Attachment 4, “Subcontractor Statement(s) of Work and Reporting Requirements”
+Other documents, exhibits, and attachments
+Key Personnel: All Subcontractor personnel identified in the Prime Contract including, but not limited to Subcontractor’s Principal Investigator (the “Key Personnel”) are considered essential to the work to be performed under this Subcontract. If Subcontractor wishes to replace and/or reduce the effort of any or all of its Key Personnel, Subcontractor shall provide written notice of such modification (including, but not limited to the names and effort of the proposed substitute Key Personnel) to Contractor at least thirty (30) business days prior to the proposed start date of any new Key Personnel. Upon receipt of Subcontractor’s notice of replacement of Key Personnel, Contractor shall have the option to either (a) accept any or all of the substitute Key Personnel, (b) request different Key Personnel, and/or (c) terminate this Subcontract, without penalty. Under no circumstance is Contractor obligated to accept Subcontractor’s proposed substitute Key Personnel.  
+Protection of Proprietary Information.  Subcontractor may gain access to Confidential Information of either Contractor and/or third parties during the performance of this Subcontract. For purposes of this Subcontract, “Confidential Information” means any information, knowledge or data received by one Party (the “Receiving Party”) from the other Party (the “Disclosing Party”) that is: (a) clearly marked with proprietary legends by the DISCLOSING PARTY at the time of disclosure, or (b) if the information is orally or visually disclosed, that is identified as proprietary at the time of said first disclosure and is clearly marked with proprietary legends and/or is reduced to writing within thirty (30) days of oral or visual disclosure. The Parties agree that all Confidential Information shall be kept confidential and shall not be disclosed to third parties and will be treated by the Parties with the same degree of care with which each treats and protects its own Confidential Information, but in no instance less than reasonable care. In addition, Receiving Party shall only disclose Confidential Information to those employees within its organization requiring access to perform tasks contemplated by this Subcontract, and any such employees shall be made aware of and subject to the restrictions imposed hereunder on the use of the Confidential Information. The obligations set forth under this paragraph shall continue for a period of five (5) years after the expiration or earlier termination of this Subcontract. 
+Insurance. Subcontractor must procure and maintain, at Subcontractor’s sole expense, during the period of this Subcontract, the insurance and bonds described herein. Insurance and bonds must be with a company or companies qualified to do business in Kansas, as acceptable to the Contractor, and written on the standard approved certification forms. Subcontractor shall ensure each of its subrecipients / subcontractors carries the same level of insurance.
+Liability Insurance.  Auto Liability insurance and General Liability policies related to this agreement will name the Contractor as additional insured with respect to claims, demands, suits, judgments, costs, charges, and expenses arising out of, or in connection with, any loss, damage, or injury resulting from the negligence or other fault of Subcontractor, its agents, representatives, and employees. Subcontractor must furnish certificates of insurance to the Contractor in the following minimum limits prior to execution of this Subcontract and no less than annually thereafter:
+Comprehensive General Liability Insurance.  Subcontractor shall maintain comprehensive general liability insurance with limits not less than $1 million for each occurrence involving bodily injury and property damage, a general aggregate of $2 million and products-completed operation aggregate of $1 million. Such coverage must include premises operations broad form property damage, completed operations, independent contractors, and contractual and products liability.
+Comprehensive Automobile Liability Insurance. Subcontractor shall maintain comprehensive automobile liability insurance with limits not less than $500,000 for bodily injury and property damage combined, and must cover all owned, non-owned or hired vehicles of Subcontractor. 
+Worker’s Compensation Insurance.  Subcontractor shall maintain worker’s compensation insurance as required by Kansas law.
+Property Insurance.  Subcontractor shall maintain insurance in an amount of not less than $500,000 to cover all sums which Subcontractor will legally be liable to pay by reason of liability for damages to or destruction of the Contractor’s property including but not limited to the loss of use thereof. 
+Indemnification. To the extent permitted by Kansas law and without waiving any applicable immunities, defenses, limitations or obligations, and subject to the powers, rights, and duties of the Kansas Attorney General, each Party (“Indemnifying Party”) shall indemnify, defend and hold the other Party (“Indemnified Party”) harmless from and against any and all damages, losses, liabilities and expenses (including reasonable attorneys’ fees) arising out of or relating to any third party claims, causes of action, lawsuits or other proceedings, regardless of legal theory, to the extent arising from Indemnifying Party’s (or any of Indemnifying Party’s subcontractors, suppliers, employees, agents, or representatives) intentional misconduct, gross negligence, or violation of any law or regulation. Indemnified Party shall promptly notify Indemnifying Party of any claim that is covered by this indemnification provision. Neither Party shall settle or compromise any claim or consent to the entry of any judgment without the prior written consent of the other Party and without an unconditional release of all liability by each claimant or plaintiff to the Indemnified Party. Contractor’s liability under this section shall not exceed the amount set forth in the Kansas Tort Claims Act (K.S.A. 75-6101 et seq.).
+Assignment.  This Subcontract may not be assigned by Subcontractor except upon the prior written consent of Contractor, and which consent may be withheld or conditioned by Contractor as necessary to prevent prejudice to its interests and entitlements hereunder. This Subcontract and all rights, privileges and licenses granted hereunder may be assigned by Contractor to Contractor’s subsidiaries and Contractor’s supporting organizations. This Subcontract shall be binding upon and inure to the benefit of the Parties and their respective successors, legal representatives, and assigns. 
+Severability.  If any provision of this Subcontract or any provision of any document incorporated by reference shall be held invalid, such invalidity shall not affect the other provisions of this Subcontract which can be given effect without the invalid provision, and to this end the provisions of this Subcontract are declared to be severable.
+Waiver.  No waiver of any term or provision of this Subcontract whether by conduct or otherwise in any one or more instances shall be deemed to be, or construed as, a further or continuing waiver of any such term or provision, or of any other term or provision, of this Subcontract.
+Unilateral Amendments. Contractor may issue certain changes to the Subcontract Period of Performance and Subcontractor Budget: ___ Unilaterally X Bilaterally. 
+Termination for Convenience and Stop Work Order: Contractor shall have the right to terminate this Subcontract with 30 days’ written notice to Subcontractor at any time and for any reason.  In the event that Awarding Agency terminates the Prime Contract (or any statements of work issued to Contractor under the Prime Contract), Contractor shall terminate this Subcontract in accordance with the terms of the Prime Contract.  Upon termination of this Subcontract, Subcontractor shall be reimbursed for allowable costs and non-cancelable obligations incurred prior to the date of termination and shall furnish all necessary data, deliverables, and final reports, in accordance with Attachments 4 and 5, on the research completed or in progress through the date of termination.  In the event of a Stop Work Order issued by the Awarding Agency, Subcontractor shall immediately comply upon receiving such notice by the Contractor.  
+Disputes.  The parties shall make good faith efforts to attempt to resolve all disputes through informal means. Each party agrees that, prior to resorting to litigation to resolve any dispute, it will confer with the other party to determine whether other procedures that are less expensive or less time-consuming can be adopted to resolve the dispute. Notwithstanding the foregoing, nothing in this Subcontract shall prevent and/or prohibit either party from exercising any right available to it either at law or in equity.  
+Force Majeure. Neither party shall be liable to the other for any failure or delay caused by events beyond the party’s reasonable control, including, without limitation, a failure to furnish necessary information, sabotage, failures or delays in transportation or communication, failures or substitutions of equipment, labor disputes, accidents, shortages of labor, fuel, raw materials, or equipment, or technical failures (in each case, a “Force Majeure Event”), provided the party that is prevented from carrying out its obligations hereunder (the “Affected Party”): (i) notifies the other party (the “Non-Affected Party”) immediately of any Force Majeure Event, and (ii) uses its reasonable best efforts to mitigate and remedy the adverse effects of such a Force Majeure Event. In the event said Force Majeure Event persists for longer than thirty (30) days, Contractor shall have the option to terminate this Subcontract, without penalty.
+Independent Contractor.  The Subcontractor is engaged as an independent contractor.  Nothing in this Subcontract is intended to, or shall be deemed to, constitute a partnership or joint venture between the parties. No party has the authority to bind any other party in contract or to incur any debts or obligations on behalf of any other party, and no party (including any employee or other representative of a party with responsibility for program matters) shall take any action that attempts or purports to bind any other party in such a manner, without the affected party’s prior written approval.
+Publicity/Use of Name.  Subcontractor shall not use the name, logos, insignias or trademarks of Contractor, any affiliates of Contractor, or any project member, in any publicity, advertising, promotional materials, news release or websites except as set forth in this Subcontract or as authorized in writing by Contractor in each instance.  Subcontractor may use the name of Contractor in a document required to be filed with, or provided to, any governmental authority or regulatory agency to comply with applicable legal or regulatory requirements.  Subcontractor may also refer to Contractor by name and reprint Contractor’s logo in any internal or governmental report or summary report prepared by Subcontractor as it relates to the services provided by Subcontractor to Contractor.
+Export Controls.  The parties understand that the export of goods and/or technical data from the United States may require some form of export control license from the U.S. Government in accordance with Export Administration Regulations, Title 15 CFR, sections 730-774. The parties agree that they will not disclose, export or re-export any materials or technical data received under this Subcontract to any countries for which the U.S. Government requires an export license unless it has obtained prior written authorization first from the cognizant government agency or other authority responsible for such matters. The parties further agree that in the event that export license is required, the party requiring such a license shall be responsible for the cost of obtaining such license.
+Closeout.  Along with any other reports or deliverables required hereunder, Subcontractor shall submit its final invoice and any requested release and assignment forms to Contractor within 30 calendar days following completion of the period of performance of this Subcontract.
+Warranty.  Subcontractor shall be responsible for all work in this Subcontract.  Subcontractor shall make good, at Subcontractor's expense, as may be necessary, any defective work or unsatisfactory services rendered.
+Compliance with Laws. Subcontractor shall at all times comply with all applicable federal, state, and local laws, ordinances, and regulations in the performance of this Subcontract.
+Classified Work. The Parties acknowledge that this Subcontract may involve classified work. All military security requirements in the performance of this Subcontract shall be maintained in accordance with the specific DD Form 254. 
+Counterparts.  This Subcontract may be executed simultaneously in one or more counterparts, each of which shall be deemed an original, but all of which together shall constitute one and the same agreement.  The parties agree that a party’s signature on this Subcontract that is exchanged by portable document format (PDF) or facsimile shall have the effect of original signature of the party for all purposes.
+Entire Agreement: This Subcontract, including all attachments hereto, constitutes the entire agreement between the parties regarding the subject matter herein. Any modification to this Subcontract shall be made in writing and must be signed by an authorized representative of each party.
+IN WITNESS WHEREOF, duly authorized representative of the parties have entered into this Subcontract as of the date of the last signature set forth below:
+Prime Contractor Signature
+Subcontractor Signature
+Name:  John S. Tomblin, Ph.D.
+Name:
+Title: Senior VP for Industry & Defense Programs
+Title:
+Date:
+Date:
+
+Subcontract Under a Federal Contract
+Attachment 1
+Representations and Certifications
+Subcontract No. 24-00373
+The following is incorporated into the Subcontract by reference.
+ANNUAL REPRESENTATIONS AND CERTIFICATIONS (JAN 2022), FAR Clause 52.204-8, as modified by FAR 4.1202.
+ONLINE REPRESENTATIONS & CERTIFICATIONS, FAR Subpart 4.12:
+Subcontractor shall complete electronic annual representations and certifications at https://www.sam.gov (System for Award Management, or SAM) (see FAR 4.1102).  SAM includes all registrations and certifications previously found in CCR/FedReg, ORCA, and EPLS.
+(1) Subcontractor shall update the representations and certifications submitted to SAM as necessary, but at least annually, to ensure they are kept current, accurate, and complete. The representations and certifications are effective until one year from date of submission or update to SAM.
+(2) When any of the conditions in paragraph (b) of the clause at 52.219-28, Post-Award Small Business Program representation, apply, if Subcontractor represented that it was a small business prior to award of this Subcontract, it must update the representations and certifications in SAM as directed by the clause. If Subcontractor represented that it was other than a small business prior to award of this Subcontract, it may update the representations and certifications in SAM as directed by the clause, if its size status has changed since the date of award.
+https://www.sam.gov/SAM/
+Has Subcontractor’s Online Representations and Certifications been completed within the last year?  _X__ YES  ____ NO
+Debarment, Suspension, and Other Responsibility Matters (2 CFR 200.213 and 2 CFR 180)
+By signing this Subcontract, the Subcontractor Authorized Official certifies, to the best of his/her knowledge and belief that neither the Subcontractor nor its principals are presently debarred, suspended, proposed for debarment, declared ineligible or voluntarily excluded from participation in this transaction by any federal department or agency, in accordance with 2 CFR 200.213 and 2 CFR 180.
+
+Research Subcontract 
+Attachment 3A
+Subcontract No. 24-00373
+Prime Contractor Contacts
+Name:  Wichita State University
+Address:  1845 Fairmount
+City:  Wichita
+State: KS
+Zip Code + 4: 67260-0093
+Institution Type: State Institution of Higher Education
+Congressional District: KS-004
+Registration current in SAM?   Yes _X_ No __
+Administrative Contact
+Name:  Amanda Tucker
+Address: 1845 Fairmount, Campus Box 093
+City: Wichita
+State: KS
+Zip Code + 4 67260-0093
+Telephone: 316-978-6812
+Fax: 316-978-3750
+E-Mail: amanda.tucker@idp.wichita.edu
+Principal Investigator
+Name: John S. Tomblin, Ph.D.
+Address: 1845 Fairmount, Campus Box 093
+City: Wichita
+State: KS
+Zip Code + 4 67260-0093
+Telephone: 316-978-6427
+Fax: 
+E-Mail: john.tomblin@wichita.edu 
+Financial Contact
+Name: Amy Smith
+Address: 1845 Fairmount, Campus Box 093
+City: Wichita
+State: KS
+Zip Code + 4 67260-0093
+Telephone: 316-978-6217
+Fax: 316-978-3750
+E-Mail: PostAward@idp.wichita.edu
+Invoice Contact
+Name: Melissa Ternes
+Address: 1845 Fairmount, Campus Box 093
+City: Wichita
+State: KS
+Zip Code + 4 67260-0093
+Telephone: 316-978-6311
+Fax: 316-978-3750
+E-Mail: Melissa.ternes@idp.wichita.edu and rachael.andrulonis@idp.wichita.edu
+Authorized Official
+Name: John S. Tomblin, Ph.D.
+Address: 1845 Fairmount, Campus Box 093
+City: Wichita
+State: KS
+Zip Code + 4 67260-0093
+Telephone: 316-978-6427
+Fax: 316-978-3750
+E-Mail: contracts@niar.wichita.edu 
+Research Subcontract
+Attachment 3B
+Subcontract No. 24-00373
+Subcontractor Contacts
+Name:  
+Address:  
+City:  
+State:  
+Zip Code + 4: 
+Institution Type : 
+Congressional District: 
+Registration current in SAM.gov? Yes _  No __
+EIN:  
+DUNS: 
+Parent DUNS:
+Did Subcontractor's gross income, from all sources, in the previous tax year exceed $300,000?  Yes  No
+Is the Performance Site the same address as set forth above?  Yes  No 
+If no, is the Performance Site the same as the PI address set forth below?  Yes  No
+If you answered “no” to any of the above questions, please complete “Attachment 3B, Page 2,” below.  
+Is Subcontractor exempt from reporting compensation?  Yes  No   If no, complete “Attachment 3B, Page 2,” below.  
+Administrative Contact
+Name:   
+Address:    
+City: 
+State:  
+Zip Code  + 4:  
+Telephone:  
+Fax: 
+E-Mail: 
+Principal Investigator 
+Name:  
+Address:  
+City:  
+State: 
+Zip Code + 4:    
+Telephone:  
+Fax: 
+E-Mail:  
+Financial Contact
+Name:  
+Address:  
+City: H
+State:  
+Zip Code  + 4:   
+Telephone:  
+Fax: 
+E-Mail:  
+Checks Sent To:
+Name:  
+Address: 
+City: 
+State:  
+Zip Code  + 4:   
+E-Mail: 
+Authorized Official
+Name:  
+Address: 
+City: 
+State:  
+Zip Code + 4:   
+Telephone:  
+Fax: 
+E-Mail:  
+Research Subcontract
+Attachment 3B, Page 2
+Place of Performance & Highest Compensated Officers
+Subcontract No. 24-00373
+Subcontractor Name:  
+Place of Performance: 
+Name:  
+Address:  
+City: 
+State  
+Zip Code + 4  
+Telephone:  
+E-Mail:  
+Congressional District:  
+The names and total compensation of the five most highly compensated officers of Subcontractor must be listed if:
+(i) Subcontractor in the preceding fiscal year received: 
+     (I) 80 percent or more of its annual gross revenues in Federal awards (federal contracts (and subcontracts), loans, grants (and subgrants) and cooperative agreements); AND
+     (ll) $25,000,000 or more in annual gross revenues from Federal awards; AND 
+(ii) the public does not have access to information about the compensation of the senior executives of Subcontractor through periodic reports filed under section 13(a) or 15(d) of the Securities Exchange Act of 1934 (15 U.S.C. 78m(a), 78o(d)) or section 6104 of the Internal Revenue Code of 1986.
+Is Subcontractor exempt from reporting executive compensation? Yes 
+  No  If no, complete the information below.
+Officer 1 Name       
+Officer 1 Compensation       
+Officer 2 Name       
+Officer 2 Compensation       
+Officer 3 Name       
+Officer 3 Compensation       
+Officer 4 Name       
+Officer 4 Compensation       
+Officer 5 Name       
+Officer 5 Compensation       
+Subcontract Under a Federal Contract
+Attachment 4 
+Subcontractor Statement of Work and Reporting Requirements
+Subcontract No. 24-00373
+Phase II Proposed Research: ‘Effect of defects’ on the crack resistance of Ox-Ox CMCs
+TASK 1: Identify candidate Ox-Ox CMCs for testing and evaluation. The following material system will most likely be used for DCB testing of CMC laminates. (TU, AvMC, AU) 
+AX-7900-720
+Solvent-based Ceramic Matrix Composite (CMC) Prepreg, Low Creep / High Temperature
+Aircraft engine components, ducting, oil & gas tubing, advanced energy, motorsports
+Woven prepreg
+White on white
+2000°F (1090°C)
+Low creep & higher temperature applications
+TASK 2: Perform micro and macrostructural analysis using optical and scanning electron microscopy to identify the processing-induced defects (pores, microcracks, disbonds, etc.). (TU) 
+TASK 3: Use nano-computed tomography (nano-CT) setup at AU to characterize the 3D microstructure of Ox-Ox CMC. This characterization will focus on quantifying process defects and identifying the location/size of engineered ‘stamp’ defects. (AU)  
+TASK 4: An attempt shall be made to develop a voxel-based finite element approach to assess the mechanical behavior of Ox-Ox CMC laminates based on previous work [1,4]. The inclusion of process defects via analytical means will also be investigated. (AU)
+TASK 5: Perform targeted fracture tests on ‘porous’ Ox-Ox CMC laminates to investigate these defects’ effect on the composites’ fracture resistance. The use of additional instrumentation (infrared thermography) during fracture tests will be investigated. (TU)
+TASK 6: The cohesive zone modeling (CZM) approach developed during Phase I will be further refined by incorporating user-defined traction-separation laws to capture the fracture process zone in CMCs under mode I loading. Phase II will address crack jumping from the defect ply to the neighboring ply. Finally, extending Phase I results, a predictive stochastic multi-scale constitutive model for porous Ox-Ox CMC laminates that explicitly accounts for process-induced defects will be attempted [5,6]. (AU)
+TASK 7: Document key results and summarize. (TU+AU)
+Deliverables
+Phase II: The following items will be shared with NIAR/DevCOM:
+A detailed procedure for multi-scale damage development (modeling and experimental technique) in CMCs shall be developed and shared. 
+A detailed report documenting experimental/computational standards developed shall be shared.
+Budget: 
+Subcontract Under a Federal Contract
+Attachment 6
+Prime Contractor Cooperative Agreement
+Subcontract No. 24-00373
+Contractor has entered into an agreement with the Awarding Agency (the “Prime Contract”).  The Prime Contract requires that certain contract provisions be made a part of any subcontract issued by Contractor related to furthering the performance or deliverables required under the Prime Contract.  By signing this Subcontract, Subcontractor represents and warrants that it is compliant with the requirements set forth below. Additionally, Subcontractor shall flow down all applicable clauses to lower-tier subcontractors. In the event of any conflict among the requirements of clauses applicable to this Subcontract, the most stringent requirements of the clauses will apply.
+PUBLICATIONS. Subcontractor may issue news releases and other publications concerning this Subcontract and work performed by Subcontractor. Notwithstanding the foregoing, in order to avoid disclosure of confidential information and/or loss of patent rights, Subcontractor will submit all proposed publication materials to Contractor for review and comment at least 90 days prior to planned submission for publication (“Publication Review Period”). Subcontractor must notify Contractor within the Publication Review Period whether such draft contains information deemed to be confidential information that, if published would have an adverse effect on a patent application. In the event of such an objection, Subcontract and Contractor agree to negotiate in good faith an acceptable version of the publication. The obligation set forth in the paragraph shall continue throughout the term of this Subcontract and for a period of thirty (30) days following expiration and/or earlier termination of this Subcontract. 
+PATENT RIGHTS. 
+Definitions. For purposes of this Section 2, the following terms shall have the definitions ascribed below:
+“Invention” means any invention or discovery which is or may be patentable or otherwise protectable under Title 35 of the United States Code.
+“Made” when used in relation to any Invention means the conception or first actual reduction to practice of such Invention.
+“Practical application” means to manufacture, in the case of a composition of product; to practice, in the case of a process or method; or to operate, in the case of a machine or system; and in each case, under such conditions as to establish that the Invention is capable of being utilized and that its benefits are, to the extent permitted by law or Government regulations, available to the public on reasonable terms.
+“Subject Invention” means any Invention of Subcontractor conceived or first actually reduced to practice in the performance of Work under this Subcontract.
+“Background Invention” means any Invention made by Subcontractor (or its subcontractors of any tier) prior to performance of Work under this Subcontractor or outside the scope of Work performed under this Subcontract.
+Allocation of Principal Rights. 
+Unless the Subcontractor shall have notified the Contractor or the Government otherwise in accordance with Paragraph(c)(ii) below, Subcontractor shall retain the entire right, title and interest throughout the world to each Subject Invention consistent with the provisions of this Section 2. 
+With respect to any Subject Invention in which Subcontractor retains title, the Government shall have a non-exclusive, nontransferable, irrevocable, paid-up license to practice or have practiced on behalf of the United States the Subject Invention throughout the world. 
+For the Subject Invention, Subcontractor hereby grants Contractor a non-exclusive, nontransferable, irrevocable, paid-up, worldwide license to practice or have practiced the Subject Invention to the extent necessary to fulfill Contractor’s obligations under the Prime Contract, as well as for any other purpose.
+Invention Disclosure, Election of Title, and Filing of Patent Application
+Subcontractor shall disclose each Subject Invention to the Government through Contractor within two (2) months after the inventor responsible for the Subject Invention discloses it in writing to Subcontractor's company personnel responsible for patent matters. The disclosure to the Contractor shall be in the form of a written report and shall identify this Subcontract and the specific SOW under which the Subject Invention was made and the identity of the inventor(s). The disclosure shall be sufficiently complete in technical detail to convey a clear understanding to the extent known at the time of the disclosure, of the nature, purpose, operation, and the physical, chemical, biological or electrical characteristics of the Subject Invention. The disclosure shall also identify any publication, sale, or public use of the Subject Invention and whether a manuscript describing the Subject Invention has been submitted for publication and, if so, whether it has been accepted for publication at the time of disclosure.  In addition, after disclosure to the Government through Contractor, Subcontractor will promptly notify to the Government through Contractor of the acceptance of any manuscript describing the Subject invention for publication or of any on sale or public use planned by the Subcontractor.
+If the Subcontractor determines that it does not intend to retain title to any such Subject Invention, the Subcontractor shall notify the Contractor, in writing, within nine (9) months of the disclosure pursuant to Paragraph (c)(i) above. However, in any case where publication, sale or public use has initiated the one (1) year statutory period wherein valid patent protection can still be obtained in the United States, the period for such notice may be shortened to a date that is no more than six (6) months prior to the end of the statutory period.
+Subcontractor shall file its initial patent application (whether provisional or non-provisional) on a Subject Invention to which Subcontractor elects to retain title within one (1) year after election of title or, if earlier, prior to the end of the statutory period wherein valid patent protection can be obtained in the United States after a publication, or sale or public use. Subcontractor may elect to file patent applications in additional countries (including with the European Patent Office and under the Patent Cooperation Treaty) within either ten (10) months of the corresponding initial patent application (whether provisional or non-provisional) or six (6) months from the date permission is granted by the Commissioner of Patents and Trademarks to file foreign patent applications, where such filing has been prohibited by a Secrecy Order.
+Requests for the extension of time for disclosure election and/or filing may be granted at the Government’s discretion after considering the circumstances of the Subcontractor and the overall effect of the extension.  
+Subcontractor shall submit to the Government through Contractor an annual listing of Subject Inventions. At the completion of the Agreement, Subcontractor shall submit a comprehensive listing of all Subject Inventions identified during the course of the Agreement and the current status of each.  Negative reports by the Subcontractor are required.
+Contractor is not responsible for late submissions to the Government.
+Conditions When the Government May Obtain Title. Upon written request from the Government, Subcontractor shall convey to the Government title to any Subject Invention under any of the following conditions:
+If Subcontractor fails to disclose or elects not to retain title to the Subject Invention within the times specified herein; provided that the Government may only request title within sixty (60) days after learning of the failure of the Subcontractor to disclose or elect within the specified times.
+In those countries in which Subcontractor fails to file patent applications within the times specified herein; provided that if Subcontractor has filed a patent application in a country after the times specified herein but prior to its receipt of the written request by the Government, Subcontractor shall continue to retain title in that country; or
+In any country in which Subcontractor decides not to continue the prosecution of any application for, to pay the maintenance fees on, or defend in reexamination or opposition proceedings on, a patent on a Subject Invention.
+Minimum Rights to the Subcontractor and Protection of the Subcontractor’s Right to File. The Parties agree that:
+Subcontractor shall retain a non-exclusive, royalty-free license throughout the world in each Subject Invention to which the Government obtains title. Subcontractor’s license extends to its domestic (including Canada) subsidiaries and affiliates, if any, and includes the right to grant sublicenses of the same scope to the extent that the Subcontractor was legally obligated to do so at the time the Project under the Agreement was funded. This license is transferable only with the approval of the Government, except when transferred to the successor of that part of the Subcontractor’s business to which the Subject Invention pertains. Government approval for license transfer shall not be unreasonably withheld.
+Subcontractor’s domestic license may be revoked or modified by the Government to the extent necessary to achieve expeditious practical application of the Subject Invention pursuant to an application for an exclusive license submitted consistent with appropriate provisions at 37 CFR Part 404. Subcontractor’s license shall not be revoked or modified in that field of use or in the geographical areas in which the Subcontractor has achieved practical application and continues to make the benefits of the Subject Invention reasonably accessible to the public. Subcontractor’s license in any foreign country may be revoked or modified at the discretion of the Government to the extent the Subcontractor, its licensees, or its subsidiaries or affiliates have failed to achieve practical application in that foreign country.
+Before revocation or modification of the Subcontractor’s license, the Government must furnish, either directly to the Subcontractor or to the Contractor with the instruction to pass along to the Subcontractor, a written notice of the Government’s intention to revoke or modify the license, and Subcontractor shall be allowed thirty (30) calendar days (or such other time as may be authorized for good cause shown) after the notice to show cause why the license should not be revoked or modified.
+Action to Protect the Government’s Interest
+Subcontractor shall execute or have executed and promptly deliver to the Government all instruments necessary to (a) establish or confirm the rights the Government has throughout the world in those Subject Inventions to which Subcontractor elects to retain title, and (b) convey title to the Government when requested hereunder, and to enable the Government to obtain patent protection through the world in the Subject Invention.
+Subcontractor agrees to require, by written agreement, that its employees working under this Subcontract, other than clerical and non-technical employees, agree to disclose promptly in writing to Subcontractor’s personnel identified as responsible for the administration of patent matters and in a format acceptable, each Subject Invention made under this Subcontract. Subcontractor must then comply with the disclosure provisions set forth herein and execute all papers necessary to file the patent applications on the Subject Invention and establish the Government’s rights in the Subject Invention. Subcontractor acknowledges and shall instruct its employees, either through employee agreements or other suitable educational programs, on the importance of reporting inventions in sufficient time to permit the filing of patent applications prior to U.S. or foreign statutory bars.
+Subcontractor shall notify the Government through the Contractor of any decision not to continue to prosecution of a patent application, pay maintenance fees or defend in a reexamination or opposition proceeding on a patent, in any country, not less than thirty (30) days before the expiration of the response period required by the relevant patent office.
+Subcontractor shall include, within the specification of any United States patent application and any patent issuing thereon covering a Subject Invention, the following statement: “This invention was made with U.S. Government support under Agreement no. W9124P-19-9-0001 awarded by the Army Contracting Command-Redstone Arsenal to the AMTC.  The Government has certain rights in the invention.”
+Lower-Tier Agreements. Subcontractor shall include this Section 2 suitably modified to identify the parties, in all lower-tier agreements, regardless of tier, for experimental, development or research work.
+Reporting on Utilization of Subject Inventions. Upon request, Subcontractor agrees to submit, during the term of this Subcontractor, periodic reports no more frequently than annually on the utilization of a Subject Invention or on efforts at obtaining such utilization that are being made by the Subcontractor or its licensees or assignees. Such reports shall include information regarding the status of development, date of first commercial sale or use, gross royalties received by Subcontractor and such other data and information as the Government may reasonably specify. Subcontractor also agrees to provide additional reports as may be requested by the Government in connection with any march-in proceedings undertaken by the Government in accordance with Paragraph (j) of this Section 10. Consistent with 35 U.S.C. § 205, the Government agrees it shall not disclose such information to persons outside the Government without the permission of the Subcontractor.
+Preference for American Industry. Notwithstanding any other provision of this Section 10, Subcontractor shall not grant to any person the exclusive right to use or sell any Subject Invention in the United States or Canada unless such person agrees that any product embodying the Subject Invention or produced through the use of the Subject Invention shall be manufactured substantially in the United States or Canada. However, in individual cases, the requirements for such an agreement may be waived by the Government upon a showing by the Subcontractor that reasonable but unsuccessful efforts have been made to grant licenses on similar terms to potential licensees that would be likely to manufacture substantially in the United States or that, under the circumstances, domestic manufacture is not commercially feasible.
+March-in Rights. March-in Rights will follow the procedures set forth in 37 CFR 401.6. Subcontractor agrees that, with respect to any Subject Invention in which Subcontractor has retained title, the Government has the right to require Subcontractor to grant a non-exclusive license to a responsible applicant or applicants, upon terms that are reasonable under the circumstances, and if Subcontractor refuses such a request, the Government has the right to grant such a license itself if the Government determines that: 
+Such action is necessary because neither Subcontractor nor its assignees or licensees have taken effective steps, consistent with the intent of this Subcontract, to achieve practical application of the Subject Invention;
+Such action is necessary to alleviate health or safety needs which are not reasonably satisfied by Subcontractor, its assignees or licensees;
+Such action is necessary to meet requirements for public use and such requirements are not reasonably satisfied by the Subcontractor, its assignees or licensees; or
+Such action is necessary because the agreement required by Paragraph (I) of this Section 10, has not been obtained or waived or because a licensee who has the exclusive right to use or sell any subject invention in the United States is in the breach of such agreement. 
+The Government shall provide Subcontractor notification as soon as practicable, but no later than five (5) calendar days following the exercise of any rights under this Paragraph (j).
+Opportunity to Cure. Certain provisions of this Section 2 provide that the Government may gain title or a license to a Subject Invention by reason of Subcontractor’s action, or failure to act, within the times required by this Section 2. Prior to claiming such rights, the Government will give written notice to Subcontractor, through the Contractor, of the Government's intent, and afford the Subcontractor a reasonable time to cure such action or failure to act. The length of the cure period will depend on the circumstances, but in no event will be more than sixty (60) days. Subcontractor may also use the cure period to show good cause why the claiming of such title or right would be inconsistent with the intent of this Subcontractor in light of the appropriate timing for introduction of the technology in question, the relative funding and participation of the parties in the development of the Subject Invention, and other factors.
+Background Inventions. In no event shall the provisions set forth in this Section 2 apply to any Background Inventions or Patents. Subcontractor or its subcontractors shall retain the entire right, title, and interest throughout the world to each such Background Invention and Patent that each party has brought to the Work performed under this Subcontract and the Government shall not have any rights under this Subcontract to such Background Inventions and Patents. Projects to be funded under this Subcontract will list Background Inventions and Patents anticipated to be used in the Work; such listing may be amended by the Parties as appropriate to reflect changes in such plans.
+Survival Rights. The provisions of this Section 2 shall survive termination of this Subcontract.
+Patent Rights Clauses. Rights in Patents under this Subcontract shall be determined in accordance with the following FAR Part 27 clauses and provisions:
+FAR 52.227-1 Authorization and Consent and Alternate I (Apr 1984)
+FAR 52.227-2 Notice and Assistance Regarding Patent and Copyright Infringement
+FAR 52.227-3 Patent Indemnity 
+FAR 52.227-6 Royalty Information
+FAR 52.227-9 Refund of Royalties 
+FAR 52.227-10 Filing of Patent Applications – Classified Subject Matter 
+FAR 52.227-3, Patent Indemnity, FAR 52.227-6, Royalty Information, and FAR 52.227-9, Refund on Royalties will be listed in the SOW if applicable to the Work on a case-by-case basis only to the extent that the applicable circumstances, the terms of the clause, or the prescribing conditions are met.
+DATA RIGHTS AND COPYRIGHTS.
+General. Rights in technical data and computer software under this Subcontract shall be determined in accordance with the following DFARS Part 227 clauses:
+DFARS 252.227-7013 Rights in Technical Data – Noncommercial Items 
+DFARS 252.227-7014 Rights in Noncommercial Computer Software and Noncommercial Computer Software Documentation 
+DFARS 252.227-7015 Technical Data – Commercial Items 
+DFARS 252.227-7016 Rights in Bid or Proposal Information 
+DFARS 252.227-7018 Rights in Noncommercial Technical Data and Computer Software – Small Business Innovation Research (SBIR) Program (DEVIATION 2020-O0007) 
+DFARS 252.227-7019 Validation of Asserted Restrictions – Computer Software
+DFARS 252.227-7020 Rights in Special Works 
+DFARS 252.227-7021 Rights in Data-Existing Works
+DFARS 252.227-7025 Limitations on the Use or Disclosure of Government-Furnished Information Marked with Restrictive Legends 
+DFARS 252.227-7026 Deferred Delivery of Technical Data or Computer Software
+DFARS 252.227-7027 Deferred Ordering of Technical Data or Computer Software
+DFARS 252.227-7030 Technical Data – Withholding of Payment
+DFARS 252.227-7037 Validation of Restrictive Markings on Technical Data
+FAR or DFARS clauses are incorporated by reference but apply only to the extent the circumstances, the terms of the clause, or the prescribing conditions are met. 
+Subcontractor reserves the right to protect by copyright original works developed under this Subcontract. All such copyrights will be in the name of Subcontractor. Subcontractor shall grant to the Government a non-exclusive, non-transferable, royalty-free, fully paid-up, perpetual license to reproduce, prepare derivative works, distribute copies to the public and perform publicly and display publicly, for governmental purposes, any copyrighted materials developed under this Subcontract, and to authorize others to do so. However, notwithstanding the above, proprietary or otherwise protected information (including technical data and software) shall not be disclosed or released unless such release or disclosure is allowed under at least one of the above cited DFARS clauses.
+In the event Technical Data are exchanged with a notice indicating that the data is protected under copyright as a published, copyrighted work, and it is also indicated on the data that such data existed prior to, or was produced outside of, this Subcontractor, the party receiving the data and others acting on its behalf may only reproduce, distribute and prepare derivative works for the purpose of carrying out that party’s responsibilities under this Subcontract. Subcontractor is responsible for affixing appropriate markings indicating the rights of the Government on all technical data delivered under this Subcontract. 
+Nothing in this Subcontract shall preclude Subcontractor from having status and data rights afforded under a Small Business and Innovation Research ("SBIR") funding agreement for SBIR Phase III work funded under this Subcontract, if otherwise properly qualified, and provided that the work derives from, extends, or logically concludes effort(s) performed under prior SBIR funding agreements.
+Data First Produced by the Government and/or Prime Contractor. To the extent that data first produced by the Government and/or Contractor during the performance of this Subcontract is used by or on behalf of Subcontractor in the performance of this Subcontract, the Government and/or Contractor shall retain its/their preexisting rights in such data, including modifications or changes, made by either Government, Contractor, and/or Subcontractor, to such data as part of the performance under this Subcontract. Such data will, to the extent permitted by law, be appropriately marked with a suitable notice or legend and maintained in confidence by Subcontractor for a period of ten (10) years after the development of the data, with the express understanding that during the aforesaid period such data may be disclosed and used (under suitable protective conditions) by or on behalf of the Government for Government purposes only.
+Prior Technology. In the event it is necessary for the Government and/or Contractor to furnish Subcontractor with data which existed prior to, or was produced outside of this Subcontract, and such data is so identified with a suitable notice or legend, the data will be maintained in confidence and disclosed and used by Subcontractor only for the purpose of carrying out the responsibilities under this Subcontract. Data protection will include proprietary markings and handling, and the signing of non-disclosure agreements by Subcontractor’s employees and contractors and/or its subcontractors' employees. Upon completion of activities under this Subcontract, such data will be disposed of as requested by the Government and/or Contractor.
+Subcontractor’s Prior Technology. In the event it is necessary for Subcontractor to furnish the Government and/or Contractor with data which existed prior to, or was produced outside of, this Subcontract, and such data embodies trade secrets or comprises commercial or financial information which is privileged or confidential, and such data is so identified with a suitable notice or legend, the data will be maintained in confidence and disclosed and used by the Government, Government contractors, the Contractor, or contract employees that the Government may hire on a temporary or periodic basis only for the purpose of carrying out the Government’s responsibilities under this Subcontract consistent with the provisions of Section 7 of this Subcontract. Data protection will include proprietary markings and handling, and the signing of non-disclosure agreements by such Government contractors or contract employees. Subcontractor, if furnishing data which existed prior to or was produced outside of this Subcontract, has the right to license such data to other subcontractor(s) or to entities not a party to this Subcontract for a fee and/or royalty payments as determined by Subcontractor furnishing such data.
+Lower-Tier Agreements. Subcontractor shall include this Section 3, suitably modified to identify the parties, in all subcontracts and lower-tier agreements, regardless of tier, for experimental, development or research work performed under this Subcontract.
+Other Instances. Notwithstanding the terms in this Section 3, differing rights in data may be negotiated by the parties on a case-by-case basis.
+Survival Rights. Provisions of this Section 3shall survive termination of this Subcontract.
+Government Direction for Alternate Language.  Should the Government provide alternate Data Rights language to Contractor, the alternate language will be incorporated into this Subcontract and will supersede the language provided in this Section 3.
+Unlimited Rights.  Notwithstanding any language to the contrary in this Section 3, the Government shall receive unlimited rights to all technical data, computer software, and computer software documentation developed or delivered under this Subcontract, or pertaining to any item, component, or process developed under this Subcontract, except for any items previously developed at private expense that are to be furnished to the Government, except for any items previously developed at private expense that are to be furnished to the Government with restrictions and are listed in a data rights assertion table in a format consistent with the following:
+Technical Data or Computer Software to be Furnished with Restrictions
+Basis for Assertion
+Asserted Rights Category
+Name of Organization Asserting Restrictions
+Deliverables Affected
+None
+None
+None
+None
+None
+License to Contractor.  For the Subcontractor’s data that is developed or modified under this Agreement, Subcontractor hereby grants to Contractor a non-exclusive, nontransferable, irrevocable, paid-up, worldwide license to utilize and have utilized the data to the extent necessary to fulfill Contractor’s obligations under the Agreement, as well as for any other purpose.
+SAFEGUARDING COVERED DEFENSE INFORMATION. Subcontractor shall comply with 48 CFR 252.204-7012 (DFARS 252.204-7012 (OCT 2016)): Safeguarding Covered Defense Information and Cyber Incident Reporting when applicable. In the event that Subcontractor stores, process and/or generates Covered Defense Information (“CDI”), Subcontractor will certify to Contractor that (a) on its enterprise level information systems, implement the security requirements specified by National Institute of Standards and Technology (NIST) Special Publication (SP) 800-171 per the requirements of the DFARS 252.204-7012 (OCT 2016), and (b) make reasonable best efforts regarding the same for those other areas still requiring analysis, specifically Subcontractor's program unique systems/tools and subcontracts requiring flow down, as applicable. Nothing in this paragraph shall be interpreted to foreclose the Subcontractor’s right to seek alternate means of complying with the security requirements in National Institute of Standards and Technology (NIST)Special Publication (SP) 800-171 (as contemplated in DFARS deviation 2016‐O0001 (OCT 2015) (Compliance with Safeguarding Covered Defense Information Controls) and/or DFARS 252.204-7012 (Safeguarding Covered Defense Information and Cyber Incident Reporting)). By signing this Subcontract, Subcontractor represents that it is compliant with the requirements of 48 CFR 252.204-7012.
+ACCIDENT PREVENTION. If this Subcontract, or any SOW issued hereunder, involves (a) fixed-price construction; or (b) dismantling, demotion, or removal of improvements, and the Subcontract amount exceeds the Simplified Acquisition Threshold, Subcontractor shall comply with FAR 52.236-13. 
+SAFETY. Subcontractor shall comply with US Army Regulation (AR) 385-10 The Army Safety Program and supporting Department of the Army Pamphlets. 
+ENVIRONMENTAL REQUIREMENTS. 
+All activities must be in compliance with Federal, State, and local environmental laws and regulations, Executive orders, treaties and agreements. Subcontractor shall evaluate the environmental consequences and identify the specific types and amounts of hazardous waste being generated during the conduct of efforts undertaken under this Subcontract.
+Subcontractor shall give consideration to alternative materials and processes in order to eliminate, reduce or minimize hazardous waste being generated. This is to be accomplished while minimizing item cost and risk to item performance. If it is determined by Subcontractor that pollution will be generated under this Subcontract, Subcontractor shall prepare, one time, a Pollution Prevention Plan, in accordance with the CDRL A043 requirements for DIMISC-80508 (5.10).
+Subcontractor shall evaluate the environmental consequences and identify the specific types and amounts of hazardous waste being generated under this Subcontract. If it is determined by Subcontractor that hazardous waste will be generated under this Subcontract, Subcontractor shall prepare a Hazardous Waste Report, in accordance with CDRL A175 requirements for DI-MGMT-82129 (Deliverable 5.11).
+If it is determined by Subcontractor that hazardous materials are used under this Subcontract, Subcontractor shall prepare, one time, a Hazardous Materials Management Program Plan (HMMP), in accordance with the CDRL A045 requirements for DI-MGMT-81398 (5.12).
+If it is determined by Subcontractor that hazardous materials are used under this Subcontract, Subcontractor shall prepare, annually, a Hazardous Materials Management Program Plan Report (HMMPR), in accordance with the CDRL A046 requirements for DI-MISC-81397 (5.13).
+Subcontractor shall dispose of residual and scrap materials generated from this Subcontract, including high explosives. Subcontractor shall specify the anticipated quantities, methods, and disposal costs.
+OPSEC / SECURITY REQUIREMENTS: Subcontractor shall follow and comply with the AvMC Operations Security Plan, if applicable, which shall be available from Contractor upon request. 
+
+Subcontract Under a Federal Contract
+Attachment 7
+State of Kansas Contractual Provisions Attached DA-146a (Rev. 03-22)
+Subcontract No. 24-00373
+The parties agree that the following provisions are hereby incorporated into the agreement to which it is attached and made a part thereof:
+Terms Herein Controlling Provisions:  It is expressly agreed that the terms of each and every provision in this attachment shall prevail and control over the terms of any other conflicting provision in any other document relating to and a part of the agreement in which this attachment is incorporated.  Any terms that conflict or could be interpreted to conflict with this attachment are nullified.
+Kansas Law and Venue:  The agreement shall be subject to, governed by, and construed according to the laws of the State of Kansas, and jurisdiction and venue of any suit in connection with the agreement shall reside only in courts located in Sedgwick County, Kansas.
+Termination Due To Lack Of Funding Appropriation:  If sufficient funds are not appropriated to continue the function performed in this agreement and for the payment of the charges hereunder, the University may terminate this agreement at the end of its current fiscal year.  The University agrees to give written notice of termination to contractor at least 30 days prior to the end of its current fiscal year, and shall give such notice for a greater period prior to the end of such fiscal year as may be provided in this contract, except that such notice shall not be required prior to 90 days before the end of such fiscal year.  Contractor shall have the right, at the end of such fiscal year, to take possession of any equipment provided under any contract for which it has not been paid.  The University will pay to the contractor all regular contractual payments incurred through the end of such fiscal year, plus contractual charges incidental to the return of any such equipment.  Upon termination of the agreement by the University, title to any such equipment shall revert to Contractor at the end of the University’s current fiscal year.  The termination of the contract pursuant to this paragraph shall not cause any penalty to be charged to the agency or the contractor.
+Disclaimer of Liability:  No provision of this contract will be given effect that attempts to require the State of Kansas or the University to defend, hold harmless, or indemnify any contractor or third party for any acts or omissions. The liability of the State of Kansas and the University is defined under the Kansas Tort Claims Act (K.S.A. 75-6101 et seq.).
+Anti-Discrimination Clause:  Contractor agrees: (a) to comply with the Kansas Act Against Discrimination (K.S.A. 44-1001 et seq.) and the Kansas Age Discrimination in Employment Act (K.S.A. 44-1111 et seq.) and the applicable provisions of the Americans With Disabilities Act (42 U.S.C. 12101 et seq.) (ADA), and Kansas Executive Order No. 19-02,  and to not discriminate against any person because of race, color, gender, sexual orientation, gender identity or expression, religion, national origin, ancestry, age, military or veteran status, disability status, marital or family status, genetic information, or political affiliation that is unrelated to the person's ability to reasonably perform the duties of a particular job or position; (b) to include in all solicitations or advertisements for employees, the phrase "equal opportunity employer"; (c) to comply with the reporting requirements set out at K.S.A. 44-1031 and K.S.A. 44-1116; (d) to include those provisions in every subcontract or purchase order so that they are binding upon such subcontractor or vendor; (e) that a failure to comply with the reporting requirements of (c) above or if the contractor is found guilty of any violation of such acts by the Kansas Human Rights Commission, such violation shall constitute a breach of contract and the agreement may be cancelled, terminated or suspended, in whole or in part, by the contracting state agency or the Kansas Department of Administration; (f) if it is determined that the Contractor has violated applicable provisions of ADA, such violation shall constitute a breach of contract and the agreement may be cancelled, terminated or suspended, in whole or in part, by the University or the Kansas Department of Administration.
+ Contractor agrees to comply with all applicable state and federal anti-discrimination laws.
+ The provisions of this paragraph number 5 (with the exception of those provisions relating to the ADA) are not applicable to a Contractor who employs fewer than four employees during the term of such contract or whose contracts with the contracting State agency cumulatively total $5,000 or less during the fiscal year of such agency.
+Acceptance:  The agreement shall not be considered accepted, approved or otherwise effective until the statutorily required approvals and certifications have been given, including, but not limited to the signature of an authorized representative of the University, as defined in University policy.
+Arbitration, Damages and Warranties:  Notwithstanding any language to the contrary, no interpretation of this contract shall find that the State or the University have agreed to binding arbitration, or the payment of damages or penalties. Further, the University does not agree to pay attorney fees, costs, or late payment charges beyond those available under the Kansas Prompt Payment Act (K.S.A. 75-6403), and no provision will be given effect that attempts to exclude, modify, disclaim or otherwise attempt to limit any damages available to the University at law, including but not limited to the implied warranties of merchantability and fitness for a particular purpose.
+Representative's Authority To Contract:  By signing this contract, the representative of Contractor thereby represents that such person is duly authorized by Contractor to execute this contract on behalf of Contractor and that Contractor agrees to be bound by the provisions thereof.
+Responsibility for Taxes:  The State of Kansas and the University shall not be responsible for, nor indemnify a Contractor for, any federal, state or local taxes which may be imposed or levied upon the subject matter of this contract.
+Insurance:  The University shall not be required to purchase any insurance against loss or damage to property or any other subject matter relating to this contract, nor shall this contract require it to establish a "self-insurance" fund to protect against any such loss or damage.  Subject to the provisions of the Kansas Tort Claims Act (K.S.A. 75-6101 et seq.), Contractor shall bear the risk of any loss or damage to any property in which Contractor holds title.
+Information:  No provision of this contract shall be construed as limiting the State of Kansas Legislative Division of Post Audit from having access to information pursuant to K.S.A. 46-1101 et seq.
+Confidentiality: As a state agency, the University’s contracts are generally public records.  Accordingly, no provision of this contract shall restrict the University’s ability to produce this contract and/or any corresponding documents in response to a lawful request or from otherwise complying with the Kansas Open Records Act (K.S.A. 45-215 et seq.).
+The Eleventh Amendment:  The Eleventh Amendment is an inherent and incumbent protection with the State of Kansas and need not be reserved, but prudence requires the State and the University to reiterate that nothing related to this contract shall be deemed a waiver of the Eleventh Amendment.
+Campaign Contributions / Lobbying:  Funds provided through a grant award or contract shall not be given or received in exchange for the making of a campaign contribution.  No part of the funds provided through this contract shall be used to influence or attempt to influence an officer or employee of the University or any State of Kansas agency or a member of the Legislature regarding any pending legislation or the awarding, extension, continuation, renewal, amendment or modification of any government contract, grant, loan, or cooperative agreement. 
+Privacy of Student Records:  Contractor understands that the University is subject to the Family Educational Rights and Privacy Act (20 U.S.C. § 1232g) (FERPA) and agrees to handle any student education records it receives pursuant to the contract in a manner that enables the University to be compliant with FERPA and its regulations. Contractor agrees to protect the privacy of student data and educational records in a commercially reasonable manner and shall not transmit, share, or disclose any data about a student without the student's written consent, except to other University officials who seek the information within the context of his/her professionally assigned responsibilities and used within the context of official University business.  Contractor shall promptly report to the University any request for or improper disclosure of University’s student educational records. 
+Export Control:  Contractor agree to comply with all U.S. Laws relating to the transfer, export, or re-export of technology and technical data, as defined in the export controls under the International Traffic in Arms Regulations (ITAR) 22 Code of Federal Regulations Parts 120-130 or the Export Administration Regulations (EAR) 15 Code of Federal Regulations Parts 730-774. The release of information to any employee or other person, who is not a U.S. Citizen or permanent resident, as well as to corporations or to any other entity, organization, or group that is not incorporated or otherwise organized to do business in the United States may require advanced written authorization from the appropriate U.S. agency.  Contractor shall notify University in writing prior to disclosure of any technical data or other items subject to EAR or ITAR and identify the export controlled items at issue and the applicable categories and subcategories of the United States Munitions List and/or Export Control Classification Number(s).  University reserves the right to decline to accept any items or information controlled under ITAR or EAR.
+Certification:  Contractor certifies that to the best of its knowledge neither it nor any of their principals are presently debarred, suspended, proposed for debarment, the subject of an indictment involving the criminal statutes enumerated in 22 Code of Federal Regulations §120.6, or otherwise declared ineligible for the award of contracts by any Federal agency.  Contractor shall provide immediate written notice to the University if at any time it learns that this certification was erroneous when submitted or has become erroneous by reason of changed circumstances.
+Facility Access:  To the extent Contractor is required to be on the University’s premises in the performance of any contract, Contractor and its representatives will adhere to the University’s reasonable safety and security policies and procedures, and will use commercially reasonable efforts not to interfere with the University’s regular operations.  Contractor further agrees to, upon request, include the University as an additional insured on its general liability insurance policy on a primary and non-contributory basis and provide the University with a certificate of insurance.
+Accounts Receivable Set-Off Program:  If during the course of this contract Contractor is found to owe a debt to the State of Kansas, University payments to Contractor may be intercepted / set-off by the State of Kansas as set forth by law. Notice of the setoff action will be provided to Contractor. Pursuant to K.S.A. 75-6201 et seq., Contractor shall have the opportunity to challenge the validity of the debt. If the debt is undisputed, Contractor shall credit the University’s account showing payment has been made in an amount equal to the funds intercepted. K.S.A. 75-6201 et seq. allows the Director of Accounts and Reports to set off University payments to Contractor against debts owed by Contractor to the State of Kansas. Payments set off in this manner constitute lawful payment for services or goods received. Contractor benefits fully from the payment because its obligation to the State of Kansas is reduced by the amount subject to setoff.
+Electronic Signature:  The parties agree that the contract may be signed with electronic signatures. If an electronic signature is used, the parties agree that it is the legally binding equivalent to the signing party’s handwritten signature. Whenever either party executes an electronic signature on the contract, it has the same validity and meaning as a handwritten signature. The parties agree that neither party will, at any time in the future, repudiate the meaning of an electronic signature or claim that an electronic signature is not legally binding.
+
+Subcontract Under a Federal Contract
+Appendix A
+Sample Invoice
+Subcontract No. 24-00373
+Date:   
+Invoice #    Award #  
+Project Title:   
+Award Period (POP):  
+Period Covered by this Request:   
+Budget Categories
+REIMBURSABLE EXPENSES
+Budget
+Current Expenditures
+Cumulative Expenditures
+Unexpended
+Balance
+Personnel
+Fringe Benefits
+Travel
+Equipment
+Supplies
+Vendor Contracts
+Subrecipients
+Other Direct Costs
+Total Direct Costs
+$ -
+$ -
+$ -
+$ -
+Indirect Costs @  %
+Indirect Costs @  %
+Grand Total
+$ -
+$ -
+$ -
+$ -
+By signing this report, I certify to the best of my knowledge and belief that the report is true, complete and accurate, and the expenditures, disbursements and cash receipts are for the purposes and objectives set forth in the terms and conditions of the     Federal award. I am aware that any false, fictitious, or fraudulent information, or the omission of any material fact, may subject       me to criminal, civil or administrative penalties for fraud, false statements, false claims or otherwise, (U.S. Code Title 18, Section 1001 and Title 31, Sections 3729-3730 and   3801-3812).
+Signature:  
+Printed Name:  
+Title:   

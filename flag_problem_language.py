@@ -65,12 +65,14 @@ def sk_cosine_sim(sen1, sen2):
     return sim
 
 
-# This function flags sentences based on how 'similar' they are to language 
-# in the common problems cell of each T&Cs sheet
-def flag_sentences(tnc_dictionary):
+# This function flags sentences based on how 'similar' they are to language
+# in the common problems cell of each T&Cs sheet.
+# contract_text defaults to the pipeline's contract_to_txt.txt; the evaluation passes text directly.
+def flag_sentences(tnc_dictionary, contract_text=None):
 
-    with open('contract_to_txt.txt', 'r', encoding = 'utf-8') as file:
-        contract_text = file.read()
+    if contract_text is None:
+        with open('contract_to_txt.txt', 'r', encoding = 'utf-8') as file:
+            contract_text = file.read()
 
     contract_sentences = sent_tokenize(contract_text)
 
@@ -103,9 +105,8 @@ def flag_sentences(tnc_dictionary):
 
     return flagged_sentences
 
-# Compares the entire contract to 'flagged_sentences' and inserts the relevant data
-# into the txt file below the matched flagged sentence
-def _flag_problem_language(tnc_path_in):
+# Loads every topic sheet of the Ts&Cs Matrix into {sheet name: sheet data}
+def load_tnc_matrix(tnc_path_in):
     wb = openpyxl.load_workbook(tnc_path_in)
 
     sheet_names = wb.sheetnames
@@ -117,6 +118,13 @@ def _flag_problem_language(tnc_path_in):
             sheet = wb[sheet_name]
             sheet_data = extract_sheet_data(sheet)
             tnc_dictionary[sheet_name] = sheet_data
+
+    return tnc_dictionary
+
+# Compares the entire contract to 'flagged_sentences' and inserts the relevant data
+# into the txt file below the matched flagged sentence
+def _flag_problem_language(tnc_path_in):
+    tnc_dictionary = load_tnc_matrix(tnc_path_in)
 
     flagged_sentences = flag_sentences(tnc_dictionary)
     with open('contract_to_txt.txt', 'r', encoding = 'utf-8') as file:
