@@ -1,6 +1,7 @@
 from nicegui import ui, run, app
+import logging
 import os
-from contract_to_txt import convert_to_txt, txt_to_docx
+from contract_to_txt import UnsupportedFileError, convert_to_txt, txt_to_docx
 from flag_FAR_clauses import annotate_contract
 from flag_problem_language import _flag_problem_language
 from nltk import data as nltk
@@ -26,6 +27,19 @@ NATIVE = os.environ.get("AICR_NATIVE", "0").lower() in {"1", "true", "yes"}
 HOST = os.environ.get("AICR_HOST", "127.0.0.1")
 PORT = int(os.environ.get("AICR_PORT", "8080"))
 
+logger = logging.getLogger("aicr")
+
+# Shown when a file fails for a reason we did not anticipate; the details go to the log
+GENERIC_FAILURE = "The file may be damaged, password-protected, or in an unexpected format. Details were logged."
+
+# Returns the message to show the user when a file could not be processed, and logs the error
+def failure_message(name, error):
+    if isinstance(error, UnsupportedFileError):
+        logger.warning("Could not process %s: %s", name, error)
+        return f"Could not process {name}. {error}"
+    logger.exception("Could not process %s", name, exc_info=error)
+    return f"Could not process {name}. {GENERIC_FAILURE}"
+
 ##############################################################################################################################
 
 @ui.page("/subscanner")
@@ -44,7 +58,11 @@ def handle_sub_upload(e):
     name = e.name
     binary = e.content.read()
     upload_filepath = write_binary_to_temp_file(name, binary)
-    found = pdf_to_txt.scan_for_findings(upload_filepath)
+    try:
+        found = pdf_to_txt.scan_for_findings(upload_filepath)
+    except Exception as error:
+        ui.notify(failure_message(name, error), type='warning', multi_line=True, timeout=0, close_button=True)
+        return
     if found:
         ui.notify(name + " was flagged", type='negative')
     else:
@@ -75,20 +93,29 @@ async def handle_contract_upload(e):
     downloads_path = os.path.join(os.environ['USERPROFILE'], 'Downloads')
     output_filepath = os.path.join(downloads_path, f"{getFilenameStringNoExtension(name)}_scanned.docx")
     ui.notify("Scanning file...")
-    await run.cpu_bound(scan_file, upload_filepath, output_filepath)
+    try:
+        flagged_count = await run.cpu_bound(scan_file, upload_filepath, output_filepath)
+    except Exception as error:
+        ui.notify(failure_message(name, error), type='warning', multi_line=True, timeout=0, close_button=True)
+        return
     os.remove(upload_filepath)
-    ui.notify("Downloading scan")
+    if flagged_count:
+        ui.notify(f"{name}: {flagged_count} passage(s) of potential problem language flagged. Downloading scan.", type='negative')
+    else:
+        ui.notify(f"{name}: no problem language found. Downloading scan (FAR clauses are still highlighted).", type='positive')
     ui.download(output_filepath)
 
+# Scans a contract and writes the annotated copy; returns the number of passages flagged
 def scan_file(filepath, output_filepath):
     # clean docx and annotate it
     convert_to_txt(filepath)
-    _flag_problem_language(TNC_MATRIX_PATH)
+    flagged_count = _flag_problem_language(TNC_MATRIX_PATH)
     back_to_docx = 'flagged_contract_to_txt.txt'
     file_to_highlight = 'flagged_contract_to_docx.docx'
     txt_to_docx(back_to_docx, file_to_highlight)
 
     annotate_contract(FAR_CLAUSE_MATRIX_PATH, file_to_highlight, output_filepath)
+    return flagged_count
 
 def getFilenameStringNoExtension(filename):
     temp_list = filename.split(".")

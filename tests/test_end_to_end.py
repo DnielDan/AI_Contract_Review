@@ -12,11 +12,11 @@ SAMPLE_DOCX = os.path.join(os.path.dirname(__file__), "..", "supplementary_files
 def test_full_scan_of_docx_produces_annotated_output(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     output = tmp_path / "scanned.docx"
-    main.scan_file(SAMPLE_DOCX, str(output))
+    flagged_count = main.scan_file(SAMPLE_DOCX, str(output))
 
     text = "\n".join(paragraph.text for paragraph in Document(output).paragraphs)
     assert "FAR Acceptance Status Color Code" in text
-    assert "[POTENTIAL PROBLEMATIC LANGUAGE DETECTED]" in text
+    assert text.count("[POTENTIAL PROBLEMATIC LANGUAGE DETECTED]") >= flagged_count > 0
 
 
 def test_filename_without_extension():

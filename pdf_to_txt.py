@@ -1,5 +1,4 @@
 from contract_to_txt import extract_pdf_text
-import mmap
 import os
 
 # Converts pdf to txt
@@ -21,18 +20,13 @@ def scan_for_findings(pdf_path):
         os.remove(txt_file)
 
 
-# Method that searches txt files for things in findings_list
+# Method that searches txt files for things in findings_list.
+# Errors are no longer swallowed: an unreadable file used to be reported as "not flagged".
 def flag_findings(txt_file):
-    findings_list = [b"Material weaknesses identified? Yes",
-                     b"Noncompliance material to financial statements noted? Yes",
-                     b"Significant deficiencies identified? Yes",
+    findings_list = ["Material weaknesses identified? Yes",
+                     "Noncompliance material to financial statements noted? Yes",
+                     "Significant deficiencies identified? Yes",
                     ]
-    try:
-        with open(txt_file) as f:
-            for i in findings_list:
-                s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-                if s.find(i) != -1:
-                    return True
-    except:
-        return False
-    return False
+    with open(txt_file, encoding="utf-8") as f:
+        text = f.read()
+    return any(finding in text for finding in findings_list)
