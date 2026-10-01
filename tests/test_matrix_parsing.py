@@ -11,9 +11,8 @@ SKIPPED_SHEETS = {"INDEX", "template", "CONTACTS"}
 def test_far_matrix_has_clauses_and_statuses():
     far = read_far_matrix(main.FAR_CLAUSE_MATRIX_PATH)
     assert list(far.columns) == ["Clause", "Acceptance Status*"]
-    assert len(far) > 700
-    statuses = {str(status).strip().upper() for status in far["Acceptance Status*"]}
-    assert {"OK", "C", "REMOVE"} <= statuses
+    assert len(far) > 450  # real clause numbers only; archived "OLD" rows are dropped
+    assert set(far["Acceptance Status*"]) == {"OK", "C", "REMOVE"}
 
 
 def test_tnc_matrix_sheets_parse_with_aligned_columns():

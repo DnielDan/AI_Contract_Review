@@ -28,13 +28,43 @@ def annotate_contract(xls_in, contract_in, save_path):
     # Save Annotated Document
     new_doc.save(save_path)
 
-# Function to read FAR Matrix from Excel and return clean DataFrame
+# Acceptance statuses from least to most restrictive, and the highlight used for each
+STATUS_SEVERITY = {'OK': 0, 'C': 1, 'REMOVE': 2}
+STATUS_COLORS = {
+    'OK': WD_COLOR_INDEX.BRIGHT_GREEN,   # Green for OK
+    'C': WD_COLOR_INDEX.TURQUOISE,       # Turquoise for Conditional (would be blue but it's hard to read)
+    'REMOVE': WD_COLOR_INDEX.RED,        # Red for Remove
+}
+# A FAR clause number, such as 52.204-21
+_CLAUSE_NUMBER = re.compile(r'^\d{2}\.\d{3}-\d{1,4}$')
+
+# Function to read FAR Matrix from Excel and return clean DataFrame.
+# Keeps only rows whose Clause is a real clause number: the matrix also has 326 archived rows whose
+# Clause is "OLD" and one "RESERVED" row, which used to match ordinary words like "hold" and "reserved".
+# Statuses are normalized ("Remove", " C", "OK " were never highlighted), and a clause listed more than
+# once keeps its most restrictive status, so the tool never shows a clause as more acceptable than OSP does.
 def read_far_matrix(excel_path):
     df = pd.read_excel(excel_path)
     df_clean = df.dropna(subset=['Clause ', 'Acceptance Status*'])
     df_clean = df_clean[['Clause ', 'Acceptance Status*']]
-    df_clean.rename(columns={'Clause ': 'Clause'}, inplace=True)
+    df_clean = df_clean.rename(columns={'Clause ': 'Clause'})
+    df_clean['Clause'] = df_clean['Clause'].astype(str).str.strip()
+    df_clean['Acceptance Status*'] = df_clean['Acceptance Status*'].astype(str).str.strip().str.upper()
+    df_clean = df_clean[df_clean['Clause'].str.match(_CLAUSE_NUMBER) & df_clean['Acceptance Status*'].isin(STATUS_SEVERITY)]
+    df_clean = (df_clean.assign(severity=df_clean['Acceptance Status*'].map(STATUS_SEVERITY))
+                .sort_values('severity', kind='stable')
+                .drop_duplicates('Clause', keep='last')
+                .drop(columns='severity')
+                .sort_index())
     return df_clean
+
+# Matches a clause number on its own, so "52.204-2" does not match inside "52.204-21"
+def _clause_pattern(clause):
+    return re.compile(rf'(?<![\d.]){re.escape(clause)}(?!\d)')
+
+# Returns the more restrictive of two statuses
+def _stricter(status_a, status_b):
+    return max(status_a, status_b, key=lambda status: STATUS_SEVERITY.get(status, -1))
 
 # Function to read text from a .docx file
 def read_docx(file_path):
@@ -48,8 +78,8 @@ def read_docx(file_path):
 def flag_clauses(contract_text, xls_clauses, acceptance_status):
     flagged_clauses = {}
     for clause, status in zip(xls_clauses, acceptance_status):
-        if re.search(re.escape(clause), contract_text, re.IGNORECASE):
-            flagged_clauses[clause] = status
+        if _clause_pattern(clause).search(contract_text):
+            flagged_clauses[clause] = _stricter(flagged_clauses.get(clause, status), status)
     return flagged_clauses
 
 def add_color_code(new_doc):
@@ -73,11 +103,10 @@ def annotate_paragraph(paragraph, flagged_clauses, new_doc):
     for run in paragraph.runs:
         new_run = new_paragraph.add_run(run.text, run.style.name)
         new_run.font.highlight_color = run.font.highlight_color if run.font.highlight_color else None
+        # When a run mentions several clauses, show the most restrictive status among them
+        strictest = None
         for clause, status in flagged_clauses.items():
-            if re.search(re.escape(clause), run.text, re.IGNORECASE):
-                if status == 'OK':
-                    new_run.font.highlight_color = WD_COLOR_INDEX.BRIGHT_GREEN # Green for OK
-                elif status == 'C':
-                    new_run.font.highlight_color = WD_COLOR_INDEX.TURQUOISE  # Turqoise for Conditional (would be blue but its hard to read)
-                elif status == 'REMOVE':
-                    new_run.font.highlight_color = WD_COLOR_INDEX.RED  # Red for Remove
+            if _clause_pattern(clause).search(run.text):
+                strictest = status if strictest is None else _stricter(strictest, status)
+        if strictest in STATUS_COLORS:
+            new_run.font.highlight_color = STATUS_COLORS[strictest]
