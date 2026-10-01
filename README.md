@@ -43,6 +43,13 @@ python -m pytest
 
 The tests cover text extraction, matrix parsing, problem-language flagging, FAR clause highlighting, and a full scan of a sample contract. GitHub Actions runs them on Linux for every pull request and every push to `main` (`.github/workflows/tests.yml`); they run offline and never send contract text to an external service.
 
+## Measuring accuracy
+`evaluation/` holds a labeled test set built from OSP's own markup of the sample contracts, and a script that scores a scanner against it:
+```
+python -m evaluation.evaluate --scanner baseline --split dev
+```
+See `evaluation/README.md` for how the labels were made, their limits, and the current baseline.
+
 ## Sample files
 Sample documents for trying each scanner are in `supplementary_files/samples_test_set/`:
 

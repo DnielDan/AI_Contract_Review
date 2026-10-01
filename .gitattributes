@@ -1,0 +1,2 @@
+# Keep the evaluation's contract texts byte-identical on every OS, so scanners score the same input
+evaluation/data/*.txt text eol=lf
