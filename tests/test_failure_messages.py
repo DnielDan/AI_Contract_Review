@@ -84,8 +84,19 @@ def test_successful_scan_says_whether_anything_was_found(notifications, monkeypa
     def fake_scan(path, output):
         with open(output, "wb") as file:
             file.write(b"annotated")
-        return flagged
-    monkeypatch.setattr(main, "scan_file", fake_scan)
+        return flagged, None
+    monkeypatch.setattr(main, "scan_contract", fake_scan)
     asyncio.run(main.handle_contract_upload(FakeUpload("contract.docx", b"stand-in")))
     assert any(expected in m for m, _ in notifications)
+    assert notifications[-1][0] == "download"
+
+
+def test_ai_fallback_notice_is_shown(notifications, monkeypatch):
+    def fake_scan(path, output):
+        with open(output, "wb") as file:
+            file.write(b"annotated")
+        return 1, "AI review unavailable, so the basic matcher was used."
+    monkeypatch.setattr(main, "scan_contract", fake_scan)
+    asyncio.run(main.handle_contract_upload(FakeUpload("contract.docx", b"stand-in")))
+    assert any("AI review unavailable" in m and k == "warning" for m, k in notifications)
     assert notifications[-1][0] == "download"

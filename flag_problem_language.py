@@ -65,10 +65,13 @@ def sk_cosine_sim(sen1, sen2):
     return sim
 
 
+# Default similarity score above which a sentence is flagged; the app reads AICR_SIMILARITY_THRESHOLD (US-7)
+DEFAULT_SIMILARITY_THRESHOLD = 0.20
+
 # This function flags sentences based on how 'similar' they are to language
 # in the common problems cell of each T&Cs sheet.
 # contract_text defaults to the pipeline's contract_to_txt.txt; the evaluation passes text directly.
-def flag_sentences(tnc_dictionary, contract_text=None):
+def flag_sentences(tnc_dictionary, contract_text=None, threshold=DEFAULT_SIMILARITY_THRESHOLD):
 
     if contract_text is None:
         with open('contract_to_txt.txt', 'r', encoding = 'utf-8') as file:
@@ -76,7 +79,6 @@ def flag_sentences(tnc_dictionary, contract_text=None):
 
     contract_sentences = sent_tokenize(contract_text)
 
-    threshold = 0.20
     flagged_sentences = {}
 
     for key, sub_dict in tnc_dictionary.items():
@@ -125,12 +127,12 @@ def load_tnc_matrix(tnc_path_in):
 # into the txt file below the matched flagged sentence. Returns the number of distinct sentences flagged.
 # The app passes paths inside the upload's own working directory; the defaults are the original filenames.
 def _flag_problem_language(tnc_path_in, contract_txt_path='contract_to_txt.txt',
-                           flagged_txt_path='flagged_contract_to_txt.txt'):
+                           flagged_txt_path='flagged_contract_to_txt.txt', threshold=DEFAULT_SIMILARITY_THRESHOLD):
     tnc_dictionary = load_tnc_matrix(tnc_path_in)
 
     with open(contract_txt_path, 'r', encoding = 'utf-8') as file:
         lines = file.read()
-    flagged_sentences = flag_sentences(tnc_dictionary, lines)
+    flagged_sentences = flag_sentences(tnc_dictionary, lines, threshold)
 
     token_lines = sent_tokenize(lines)
     modded_lines = []

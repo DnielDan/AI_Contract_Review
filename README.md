@@ -36,6 +36,21 @@ Agreement Scanner (`/subscanner`) at http://127.0.0.1:8080. Launch options are s
 | `AICR_PORT` | `8080` | Port to listen on. |
 | `AICR_NATIVE` | `0` | Set to `1` to open in a desktop window (requires `pywebview`) instead of the browser. |
 
+## Settings and AI review
+Settings can also go in a `.env` file in the repository folder: copy `.env.example` to `.env` and fill in what you need. `.env` is ignored by git, so API keys never reach the repository.
+
+**AI review (US-12).** Set `LLM_PROVIDER` to have an LLM review the contract's language instead of the basic matcher, then fill in that provider's key:
+
+| `LLM_PROVIDER` | Key to fill in | Notes |
+|---|---|---|
+| `openrouter` | `OPENROUTER_API_KEY` | What the team uses for now. Sample contracts only: OpenRouter forwards text to third-party providers. |
+| `anthropic` | `ANTHROPIC_API_KEY` | Claude. |
+| `gemini` | `GEMINI_API_KEY` | Google Gemini. |
+
+`LLM_MODEL` picks a model other than the provider's default. For each flagged passage the output shows the matrix's own guidance (category, "Why", Auburn's preferred language, first response to the sponsor) plus the AI's explanation and suggested change, labeled as such. FAR clauses are still highlighted by the exact lookup. If the AI call fails (missing key, rate limit, outage), the scan uses the basic matcher and the app says so. With `LLM_PROVIDER` empty, nothing is sent anywhere.
+
+**Matrices and matcher (US-7).** `AICR_FAR_MATRIX` and `AICR_TNC_MATRIX` point to updated matrix files (paths relative to the repository folder; default: the bundled files), and `AICR_SIMILARITY_THRESHOLD` sets the basic matcher's threshold (default `0.20`). The app checks both matrices when it starts and stops with a clear message if one is missing or lacks the expected columns.
+
 ## Running the tests
 ```
 python -m pytest
@@ -48,7 +63,7 @@ The tests cover text extraction, matrix parsing, problem-language flagging, FAR 
 ```
 python -m evaluation.evaluate --scanner baseline --split dev
 ```
-See `evaluation/README.md` for how the labels were made, their limits, and the current baseline.
+Use `--scanner llm` to score the AI review with the provider set in `.env` (each run calls the provider and may be billed). See `evaluation/README.md` for how the labels were made, their limits, and the current baseline.
 
 ## Sample files
 Sample documents for trying each scanner are in `supplementary_files/samples_test_set/`:
@@ -63,9 +78,9 @@ Sample documents for trying each scanner are in `supplementary_files/samples_tes
 `0264-23 Godwin - fully executed.pdf` is a scanned image with no text layer, so it produces an output with nothing flagged.
 
 ## What the app currently does
-- **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text, compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove).
+- **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text. With an LLM set in `.env`, the LLM reviews the text against the Ts&Cs Matrix (see "Settings and AI review"); otherwise it compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove).
 - **Subcontractor Agreement Scanner:** searches an uploaded PDF for three audit-finding phrases (for example, "Material weaknesses identified? Yes") and reports flagged or not flagged.
-- The app does not currently use a large language model; all analysis is local pattern and similarity matching.
+- Without `LLM_PROVIDER` set, all analysis is local pattern and similarity matching and no contract text leaves the machine.
 
 ## Project history
 The sections below are from the Spring 2024 teams and describe the project's original goals.

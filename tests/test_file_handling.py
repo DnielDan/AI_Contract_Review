@@ -54,8 +54,8 @@ def test_successful_scan_sends_bytes_and_leaves_nothing_on_the_server(monkeypatc
         assert os.path.dirname(path) == os.path.dirname(output)  # upload and output share one private directory
         with open(output, "wb") as file:
             file.write(b"annotated contract")
-        return 2
-    monkeypatch.setattr(main, "scan_file", fake_scan)
+        return 2, None
+    monkeypatch.setattr(main, "scan_contract", fake_scan)
 
     asyncio.run(main.handle_contract_upload(FakeUpload("Lawson agreement.docx", b"contract")))
     assert sent[-1] == ("download", b"annotated contract", "Lawson agreement_scanned.docx")

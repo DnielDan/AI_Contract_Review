@@ -66,3 +66,18 @@ to the sentences they contain or sit inside; very short excerpts are only credit
 
 The matcher misses about 70% of the problem sentences OSP marked, and roughly four in five of its
 flags are on sentences OSP left unchanged. Full reports are in `results/`.
+
+## AI review (US-12), first measurement
+`llm` scanner with OpenRouter and `nvidia/nemotron-3.5-super-vl:free`, one run on 2026-11-12
+(`results/llm_dev.md`):
+
+| Scanner | Problems | Caught | Missed | False alarms | Precision | Recall | Clause recall |
+|---|---|---|---|---|---|---|---|
+| Matcher (current code) | 61 | 18 | 43 | 62 | 22% | 30% | 11/22 |
+| AI review | 61 | 35 | 26 | 37 | 49% | 57% | 14/22 |
+
+The AI review catches about twice as many of the problems OSP marked, with 40% fewer false alarms.
+It did worse than the matcher on the Williams funding agreement (1 of 4 caught, 7 false alarms).
+This is a single run of a free shared model, which took 1 to 2.5 minutes per contract and does not
+always return the same flags for the same contract; repeat the run before relying on these numbers,
+and rescore whenever the provider or model in `.env` changes. Each run sends one request per contract.
