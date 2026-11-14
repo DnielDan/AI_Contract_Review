@@ -66,3 +66,9 @@ to the sentences they contain or sit inside; very short excerpts are only credit
 
 The matcher misses about 70% of the problem sentences OSP marked, and roughly four in five of its
 flags are on sentences OSP left unchanged. Full reports are in `results/`.
+
+## AI review (US-12)
+Score the AI review with `python -m evaluation.evaluate --scanner llm --split dev` (one request per
+contract to the provider in `.env`; add `--no-save` to keep the recorded results). `results/llm_dev.md`
+records an early prototype run with a free OpenRouter model; it is not representative of the model
+that will be chosen. Rescore whenever the provider or model changes.

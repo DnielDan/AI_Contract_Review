@@ -10,6 +10,11 @@ python-docx==1.2.0
 scikit-learn==1.4.2
 xlrd==2.0.2
 
+# AI review (US-12); only used when LLM_PROVIDER is set in .env
+anthropic==2.8.0
+openai==3.49.0
+python-dotenv==1.2.3
+
 # Tests (run with: python -m pytest)
 pytest==9.1.1
 
