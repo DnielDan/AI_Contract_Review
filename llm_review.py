@@ -10,14 +10,8 @@ flag_FAR_clauses.py.
 import json
 import re
 
-from nltk.tokenize import sent_tokenize
-
-from flag_problem_language import load_tnc_matrix
+from flag_problem_language import load_tnc_matrix, write_flagged_text
 from llm_providers import generate_structured
-
-# Quotes shorter than this only count when they match a whole sentence, so a short phrase
-# such as "the Sponsor" cannot flag every sentence that contains it
-MIN_PARTIAL_QUOTE_LENGTH = 20
 
 
 # The structured reply the model must return; category is limited to the matrix's sheet names
@@ -176,58 +170,16 @@ def _as_issue(item):
     return item if isinstance(item, dict) else None
 
 
-# Returns the first issue whose quote is this sentence, contains it, or sits inside it
-def _issue_for_sentence(sentence, issues):
-    normalized_sentence = _normalize(sentence)
-    if not normalized_sentence:
-        return None
-    for issue in issues:
-        quote = _normalize(issue["quote"])
-        if quote == normalized_sentence:
-            return issue
-        if len(quote) >= MIN_PARTIAL_QUOTE_LENGTH and (quote in normalized_sentence or normalized_sentence in quote):
-            return issue
-    return None
-
-
-# Writes the contract with each flagged sentence marked, in the same format as
-# flag_problem_language._flag_problem_language, so the rest of the pipeline is unchanged.
+# Writes the contract with each flagged passage marked in its paragraph, in the same layout as the
+# TF-IDF matcher (flag_problem_language.write_flagged_text), so the rest of the pipeline is unchanged.
 # Issues whose quote could not be found in the text are listed at the end rather than dropped.
-# Returns the number of distinct sentences flagged plus the number of issues listed at the end.
+# Returns the number of issues flagged.
 def llm_flag_problem_language(tnc_path_in, contract_txt_path, flagged_txt_path):
     tnc_dictionary = load_tnc_matrix(tnc_path_in)
     with open(contract_txt_path, "r", encoding="utf-8") as file:
         contract_text = file.read()
 
     issues = review_contract(contract_text, tnc_dictionary)
-    unplaced = list(issues)
-    flagged_count = 0
-    lines = []
-
-    def add_block(text, issue):
-        lines.append("\t\t*******************************************************************************************\n[POTENTIAL PROBLEMATIC LANGUAGE DETECTED]")
-        lines.append(text)
-        for key, value in _issue_details(issue, tnc_dictionary).items():
-            lines.append(f"\t\t{key}: {value}")
-        lines.append("\t\t[END POTENTIAL PROBLEMATIC LANGUAGE]\n*******************************************************************************************")
-
-    for sentence in sent_tokenize(contract_text):
-        issue = _issue_for_sentence(sentence, issues)
-        if issue is None:
-            lines.append(sentence)
-            continue
-        flagged_count += 1
-        if issue in unplaced:
-            unplaced.remove(issue)
-        add_block(sentence, issue)
-
-    if unplaced:
-        lines.append("ADDITIONAL ISSUES FOUND BY THE AI REVIEW (passage not located in the extracted text)")
-        for issue in unplaced:
-            add_block(issue["quote"], issue)
-
-    with open(flagged_txt_path, "w", encoding="utf-8") as file:
-        for line in lines:
-            file.write(line + "\n")
-
-    return flagged_count + len(unplaced)
+    flags = [(issue["quote"], _issue_details(issue, tnc_dictionary)) for issue in issues]
+    write_flagged_text(contract_text, flags, flagged_txt_path)
+    return len(issues)

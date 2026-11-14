@@ -40,6 +40,16 @@ def provider_name():
     return name if name and name != "none" else None
 
 
+# Returns the model the configured provider will use (LLM_MODEL, or the provider's default)
+def model_name():
+    provider = provider_name()
+    if provider == "anthropic":
+        return os.environ.get("LLM_MODEL") or _ANTHROPIC_DEFAULT_MODEL
+    if provider in _OPENAI_COMPATIBLE_PRESETS:
+        return os.environ.get("LLM_MODEL") or _OPENAI_COMPATIBLE_PRESETS[provider]["default_model"]
+    return None
+
+
 # Pulls a JSON object out of a plain-text reply, tolerating ```json fences or a sentence around it
 def _parse_json_text(text):
     text = (text or "").strip()

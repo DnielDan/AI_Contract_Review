@@ -45,7 +45,7 @@ def test_flagged_passage_gets_matrix_guidance_and_ai_suggestion(tmp_path, monkey
 def test_quote_not_in_contract_is_listed_at_the_end(tmp_path, monkeypatch):
     count, text = run_llm_flagging(tmp_path, monkeypatch, fake_reply(quote="Text that is nowhere in the contract at all."))
     assert count == 1
-    assert "ADDITIONAL ISSUES FOUND BY THE AI REVIEW" in text
+    assert "ADDITIONAL FLAGGED LANGUAGE" in text
 
 
 def test_problem_not_in_matrix_is_marked(tmp_path, monkeypatch):

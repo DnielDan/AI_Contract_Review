@@ -123,36 +123,100 @@ def load_tnc_matrix(tnc_path_in):
 
     return tnc_dictionary
 
-# Compares the entire contract to 'flagged_sentences' and inserts the relevant data
-# into the txt file below the matched flagged sentence. Returns the number of distinct sentences flagged.
+# Markers around each flagged paragraph in the flagged text; flag_FAR_clauses.py styles the output from them
+PROBLEM_START_MARKER = "[POTENTIAL PROBLEMATIC LANGUAGE DETECTED]"
+PROBLEM_END_MARKER = "[END POTENTIAL PROBLEMATIC LANGUAGE]"
+BANNER = "*******************************************************************************************"
+FLAGGED_SENTENCE_LABEL = "Flagged sentence:"
+UNPLACED_HEADER = "ADDITIONAL FLAGGED LANGUAGE (passage not located in the extracted text)"
+# Flagged text shorter than this only counts when it is a whole sentence of the paragraph, so a short
+# phrase such as "the Sponsor" cannot attach to every paragraph that contains it
+MIN_PARTIAL_MATCH_LENGTH = 20
+
+
+def _normalize(text):
+    text = str(text or "").replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+# Returns the index of the paragraph a flagged sentence or quote belongs to, or None
+def _paragraph_for(flagged_text, paragraphs, normalized_paragraphs):
+    target = _normalize(flagged_text)
+    if not target:
+        return None
+    if len(target) < MIN_PARTIAL_MATCH_LENGTH:
+        for i, paragraph in enumerate(paragraphs):
+            if target == normalized_paragraphs[i] or target in (_normalize(s) for s in sent_tokenize(paragraph)):
+                return i
+        return None
+    for i, paragraph in enumerate(normalized_paragraphs):
+        if target in paragraph:
+            return i
+    # Text that runs across lines (common in PDFs) or spans several paragraphs: use the line it starts on
+    start = target[:MIN_PARTIAL_MATCH_LENGTH * 2]
+    for i, paragraph in enumerate(normalized_paragraphs):
+        if paragraph and (start in paragraph or (len(paragraph) >= MIN_PARTIAL_MATCH_LENGTH and paragraph in target)):
+            return i
+    return None
+
+
+def _write_block(lines, text, flags_here, paragraph_is_flag):
+    lines.append("\t\t" + BANNER)
+    lines.append(PROBLEM_START_MARKER)
+    lines.append(text)
+    for flagged_text, details in flags_here:
+        if not paragraph_is_flag:
+            lines.append(f"\t\t{FLAGGED_SENTENCE_LABEL} {flagged_text}")
+        for key, value in details.items():
+            if isinstance(value, (list, tuple)):
+                value = "; ".join(str(item) for item in value if item)
+            lines.append(f"\t\t{key}: {value}")
+    lines.append("\t\t" + PROBLEM_END_MARKER)
+    lines.append(BANNER)
+
+
+# Writes the contract paragraph by paragraph, as extracted, and marks each paragraph that contains flagged
+# language, followed by a "Flagged sentence" line and the details of each flag in it. flags is a list of
+# (flagged sentence or quote, details dict). Flags that cannot be located are listed at the end.
+# Shared by the TF-IDF matcher and the LLM review (llm_review.py), so both produce the same layout.
+def write_flagged_text(contract_text, flags, flagged_txt_path):
+    paragraphs = contract_text.split("\n")
+    normalized = [_normalize(paragraph) for paragraph in paragraphs]
+    placed, unplaced = {}, []
+    for flagged_text, details in flags:
+        index = _paragraph_for(flagged_text, paragraphs, normalized)
+        if index is None:
+            unplaced.append((flagged_text, details))
+        else:
+            placed.setdefault(index, []).append((flagged_text, details))
+
+    lines = []
+    for i, paragraph in enumerate(paragraphs):
+        if i in placed:
+            whole = len(placed[i]) == 1 and _normalize(placed[i][0][0]) == normalized[i]
+            _write_block(lines, paragraph, placed[i], whole)
+        else:
+            lines.append(paragraph)
+    if unplaced:
+        lines.append(UNPLACED_HEADER)
+        for flagged_text, details in unplaced:
+            _write_block(lines, flagged_text, [(flagged_text, details)], True)
+
+    with open(flagged_txt_path, "w", encoding="utf-8") as file:
+        for line in lines:
+            file.write(line + "\n")
+
+
+# Flags sentences similar to the Ts&Cs Matrix's Common Problems and writes the contract with the flags
+# marked (see write_flagged_text). Returns the number of distinct sentences flagged.
 # The app passes paths inside the upload's own working directory; the defaults are the original filenames.
 def _flag_problem_language(tnc_path_in, contract_txt_path='contract_to_txt.txt',
                            flagged_txt_path='flagged_contract_to_txt.txt', threshold=DEFAULT_SIMILARITY_THRESHOLD):
     tnc_dictionary = load_tnc_matrix(tnc_path_in)
 
     with open(contract_txt_path, 'r', encoding = 'utf-8') as file:
-        lines = file.read()
-    flagged_sentences = flag_sentences(tnc_dictionary, lines, threshold)
+        contract_text = file.read()
+    flagged_sentences = flag_sentences(tnc_dictionary, contract_text, threshold)
 
-    token_lines = sent_tokenize(lines)
-    modded_lines = []
-
-    for tokenized_line in token_lines:
-        matched = False
-        for key in flagged_sentences:
-            if key.strip() == tokenized_line.strip():
-                matched = True
-                modded_lines.append("\t\t*******************************************************************************************\n[POTENTIAL PROBLEMATIC LANGUAGE DETECTED]")
-                modded_lines.append(tokenized_line)
-                for k, v in flagged_sentences[key].items():
-                    modded_lines.append(f"\t\t{k}: {v}")
-                modded_lines.append("\t\t[END POTENTIAL PROBLEMATIC LANGUAGE]\n*******************************************************************************************")
-                break
-        if not matched:
-            modded_lines.append(tokenized_line)
-
-    with open(flagged_txt_path, 'w', encoding = 'utf-8') as f:
-        for eachline in modded_lines:
-            f.write(eachline + '\n')
-
+    write_flagged_text(contract_text, list(flagged_sentences.items()), flagged_txt_path)
     return len(flagged_sentences)

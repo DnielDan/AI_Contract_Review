@@ -9,7 +9,7 @@ from contract_to_txt import UnsupportedFileError, convert_to_txt, txt_to_docx
 from flag_FAR_clauses import annotate_contract
 from flag_problem_language import DEFAULT_SIMILARITY_THRESHOLD, _flag_problem_language, load_tnc_matrix
 from flag_FAR_clauses import read_far_matrix
-from llm_providers import LLMConfigError, provider_name
+from llm_providers import LLMConfigError, model_name, provider_name
 from llm_review import llm_flag_problem_language
 from dotenv import load_dotenv
 from nltk import data as nltk
@@ -187,8 +187,16 @@ def scan_contract(filepath, output_filepath):
     flagged_count, ai_notice = flag_problem_language(contract_txt, flagged_txt)
     txt_to_docx(flagged_txt, file_to_highlight)
 
-    annotate_contract(FAR_CLAUSE_MATRIX_PATH, file_to_highlight, output_filepath)
+    annotate_contract(FAR_CLAUSE_MATRIX_PATH, file_to_highlight, output_filepath, review_label(ai_notice))
     return flagged_count, ai_notice
+
+# Says in the scanned document which review flagged the language, so it is clear without the app's notice
+def review_label(ai_notice):
+    if provider_name() and ai_notice is None:
+        return f"AI review ({provider_name()}, {model_name()})"
+    if ai_notice:
+        return "Basic matcher (TF-IDF similarity), because the AI review was unavailable"
+    return "Basic matcher (TF-IDF similarity)"
 
 # Flags problem language with the LLM named in .env (US-12), or with the TF-IDF matcher when no LLM
 # is configured. If the LLM call fails, the scan falls back to the matcher instead of failing.

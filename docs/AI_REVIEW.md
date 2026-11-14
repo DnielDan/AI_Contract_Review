@@ -23,7 +23,14 @@ When a contract is scanned (`main.scan_contract`):
    the text is listed at the end of the document instead of being dropped.
 4. FAR clauses are never sent to the model; they are highlighted by the exact-match lookup in
    `flag_FAR_clauses.py`.
-5. The flagged text becomes the annotated `_scanned.docx`, as before.
+5. The flagged text becomes the annotated `_scanned.docx` (`flag_FAR_clauses.annotate_contract`). A line at
+   the top says which review flagged the language (AI review with provider and model, or the basic
+   matcher, noting when the AI was unavailable). The contract keeps its paragraphs; a paragraph with
+   flagged language is highlighted yellow and followed by a "Flagged sentence" line and the matrix
+   guidance (`flag_problem_language.write_flagged_text`, shared by the AI and the matcher). Everything
+   the tool adds is highlighted gray: the Ts&Cs guidance, the AI's lines (also italic blue), and a note
+   from the FAR Matrix (title, status, acceptance criteria, request to sponsor) after the first mention
+   of each FAR clause. FAR clause numbers keep their status colors. The color legend explains all of this.
 
 The prompt tells the model to treat the contract text as data, not instructions, as a first guard
 against prompt injection (full security checks are US-13).
