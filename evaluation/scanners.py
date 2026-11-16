@@ -10,6 +10,7 @@ import os
 
 import main  # noqa: F401  (sets up the bundled NLTK data path and the matrix paths)
 from flag_problem_language import flag_sentences, load_tnc_matrix
+from llm_review import review_contract
 
 _tnc_matrix = None
 
@@ -22,6 +23,15 @@ def baseline_tfidf(contract_text):
     return list(flag_sentences(_tnc_matrix, contract_text))
 
 
+def llm_judge(contract_text):
+    """The LLM review (US-12) with the provider and model set in .env; each call is billed by the provider."""
+    global _tnc_matrix
+    if _tnc_matrix is None:
+        _tnc_matrix = load_tnc_matrix(main.TNC_MATRIX_PATH)
+    return [issue["quote"] for issue in review_contract(contract_text, _tnc_matrix)]
+
+
 SCANNERS = {
     "baseline": baseline_tfidf,
+    "llm": llm_judge,
 }

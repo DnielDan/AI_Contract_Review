@@ -16,7 +16,7 @@ def test_full_scan_of_docx_produces_annotated_output(tmp_path, monkeypatch):
 
     text = "\n".join(paragraph.text for paragraph in Document(output).paragraphs)
     assert "FAR Acceptance Status Color Code" in text
-    assert text.count("[POTENTIAL PROBLEMATIC LANGUAGE DETECTED]") >= flagged_count > 0
+    assert text.count("Problem Category:") >= flagged_count > 0
 
 
 def test_filename_without_extension():

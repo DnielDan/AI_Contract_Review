@@ -10,7 +10,8 @@ SKIPPED_SHEETS = {"INDEX", "template", "CONTACTS"}
 
 def test_far_matrix_has_clauses_and_statuses():
     far = read_far_matrix(main.FAR_CLAUSE_MATRIX_PATH)
-    assert list(far.columns) == ["Clause", "Acceptance Status*"]
+    assert list(far.columns) == ["Clause", "Acceptance Status*", "Title",
+                                 "Acceptance Criteria or Additional Notes", "Request to Sponsor"]
     assert len(far) > 450  # real clause numbers only; archived "OLD" rows are dropped
     assert set(far["Acceptance Status*"]) == {"OK", "C", "REMOVE"}
 

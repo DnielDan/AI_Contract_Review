@@ -14,3 +14,6 @@ temp/*
 # OS
 Thumbs.db
 .DS_Store
+
+# Local settings and API keys (copy .env.example to .env)
+.env

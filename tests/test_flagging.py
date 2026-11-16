@@ -23,13 +23,15 @@ def test_cosine_similarity_scores():
 def test_matrix_problem_language_is_flagged_and_unrelated_text_is_not(tmp_path, monkeypatch):
     problem = _known_problem_sentence()
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "contract_to_txt.txt").write_text(f"{UNRELATED} {problem}", encoding="utf-8")
+    (tmp_path / "contract_to_txt.txt").write_text(f"{UNRELATED}\n{UNRELATED} {problem}", encoding="utf-8")
 
     _flag_problem_language(main.TNC_MATRIX_PATH)
 
     lines = (tmp_path / "flagged_contract_to_txt.txt").read_text(encoding="utf-8").split("\n")
-    problem_line = next(i for i, line in enumerate(lines) if line.startswith(problem[:40]))
-    unrelated_line = lines.index(UNRELATED)
-    assert BANNER in lines[problem_line - 1]
-    assert unrelated_line == 0 or BANNER not in lines[unrelated_line - 1]
-    assert any(line.strip().startswith("Confidence:") for line in lines[problem_line:])
+    # The paragraph containing the problem stays whole and is marked; the unrelated paragraph is not
+    assert lines[0] == UNRELATED
+    paragraph_line = lines.index(f"{UNRELATED} {problem}")
+    assert lines[paragraph_line - 1] == BANNER
+    details = lines[paragraph_line:]
+    assert details[1].strip() == f"Flagged sentence: {problem}"
+    assert any(line.strip().startswith("Confidence:") for line in details)
