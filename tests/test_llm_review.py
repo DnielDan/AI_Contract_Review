@@ -143,3 +143,24 @@ def test_unreadable_reply_is_retried_then_reported(monkeypatch):
     monkeypatch.setattr(llm_review, "generate_structured", lambda *args: {"issues": "still not json"})
     with pytest.raises(ValueError, match="list of issues"):
         llm_review.review_contract(CONTRACT, TNC)
+
+
+def test_workbench_flags_from_the_ai_review_carry_matrix_guidance(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    monkeypatch.setattr(llm_review, "generate_structured", lambda *args: fake_reply())
+    flags, notice = main.flag_problem_language_data(CONTRACT)
+    (quote, details), = flags
+    assert quote == FLAGGED and details["Why"] == TNC[CATEGORY]["Why"][0]  # from the matrix, not the model
+    assert details["AI justification"] == "AI says this is a problem." and notice is None
+
+
+def test_workbench_flags_fall_back_to_the_matcher_with_notice(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+
+    def failing_call(*args):
+        raise ConnectionError("rate limited")
+    monkeypatch.setattr(main, "review_contract", failing_call)
+    monkeypatch.setattr(main, "flag_sentences", lambda *args: {"Matched sentence.": {"Problem Category": "Audit"}})
+    flags, notice = main.flag_problem_language_data(CONTRACT)
+    assert flags == [("Matched sentence.", {"Problem Category": "Audit"})]
+    assert "basic matcher" in notice and "openrouter" in notice

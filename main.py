@@ -1,16 +1,26 @@
-from nicegui import ui, run, app
 import glob
 import logging
 import os
 import re
+import secrets
 import shutil
 import tempfile
+import threading
+import time
+from dataclasses import dataclass, field
+import uvicorn
+from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi.responses import PlainTextResponse, Response
+from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from contract_to_txt import UnsupportedFileError, convert_to_txt, txt_to_docx
 from flag_FAR_clauses import annotate_contract
-from flag_problem_language import DEFAULT_SIMILARITY_THRESHOLD, _flag_problem_language, load_tnc_matrix
+from flag_problem_language import (DEFAULT_SIMILARITY_THRESHOLD, _flag_problem_language, flag_sentences,
+                                   load_tnc_matrix, write_flagged_text)
 from flag_FAR_clauses import read_far_matrix
 from llm_providers import LLMConfigError, model_name, provider_name
-from llm_review import llm_flag_problem_language
+from llm_review import _issue_details, llm_flag_problem_language, review_contract
+from scan_results import build_results, far_matches, review_method
 from dotenv import load_dotenv
 from nltk import data as nltk
 import pdf_to_txt
@@ -18,7 +28,7 @@ import pdf_to_txt
 # Resolve paths from this file's folder so the app runs on any OS and from any working directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SUPPLEMENTARY_DIR = os.path.join(BASE_DIR, "supplementary_files")
-STATIC_DIR = os.path.join(BASE_DIR, "static")
+FRONTEND_DIST = os.path.join(BASE_DIR, "frontend", "dist")  # the workbench, built with npm run build
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
 WORK_DIR_PREFIX = "scan_"  # each upload is processed in its own temp/scan_<random> directory
 
@@ -73,11 +83,9 @@ def check_matrices(far_path=None, tnc_path=None):
     if not any(sheet.get("Common Problems") for sheet in tnc.values()):
         raise ConfigError(f"The Ts&Cs Matrix at {tnc_path} has no sheets with a 'Common Problems' section")
 
-# Launch mode, set with environment variables (see README):
-#   AICR_NATIVE=1  open in a desktop window (needs pywebview) instead of the browser
+# Where the server listens, set with environment variables (see README):
 #   AICR_HOST      address to listen on; defaults to 127.0.0.1 so uploads are not exposed on the network
 #   AICR_PORT      port to listen on; defaults to 8080
-NATIVE = os.environ.get("AICR_NATIVE", "0").lower() in {"1", "true", "yes"}
 HOST = os.environ.get("AICR_HOST", "127.0.0.1")
 PORT = int(os.environ.get("AICR_PORT", "8080"))
 
@@ -93,81 +101,6 @@ def failure_message(name, error):
         return f"Could not process {name}. {error}"
     logger.exception("Could not process %s", name, exc_info=error)
     return f"Could not process {name}. {GENERIC_FAILURE}"
-
-##############################################################################################################################
-
-@ui.page("/subscanner")
-def subcontract_scanner():
-    ui.add_head_html("<link rel='stylesheet' href='/static/style.css'/>")
-    ui.html('<title>AI Contract Review</title>')
-    ui.colors(primary='#E87722', secondary='#e86100')
-    with ui.header(elevated=True).style('width: 100%; display: flex; justify-content: center;'):
-        with ui.element():
-            ui.label('Subcontractor Agreement Scanner').style('font-size: 22px; text-align: center')
-            with ui.element().style('width: 100%; display: flex; justify-content: center;'):
-                ui.label('Office of Sponsored Programs').style('font-size: 18px;')
-    ui.upload(multiple=True, label="Upload Subcontractor Agreements", auto_upload=True, on_upload=handle_sub_upload).props(add="accept='.pdf'")
-
-def handle_sub_upload(e):
-    name = e.name
-    work_dir = new_work_dir()
-    try:
-        upload_filepath = write_binary_to_temp_file(name, e.content.read(), work_dir)
-        found = pdf_to_txt.scan_for_findings(upload_filepath)
-    except Exception as error:
-        ui.notify(failure_message(name, error), type='warning', multi_line=True, timeout=0, close_button=True)
-        return
-    finally:
-        remove_work_dir(work_dir)
-    if found:
-        ui.notify(name + " was flagged", type='negative')
-    else:
-        ui.notify(name + " was not flagged", type='positive')
-
-
-
-
-##############################################################################################################################
-
-@ui.page("/contractscanner")
-def contract_scanner():
-    ui.add_head_html("<link rel='stylesheet' href='/static/style.css'/>")
-    ui.html('<title>AI Contract Review</title>')
-    ui.colors(primary='#0b2341', secondary='#e86100')
-    with ui.header(elevated=True).style('width: 100%; display: flex; justify-content: center;'):
-        with ui.element():
-            ui.label('AI Contract Scanner').style('font-size: 22px; text-align: center')
-            with ui.element().style('width: 100%; display: flex; justify-content: center;'):
-                ui.label('Office of Sponsored Programs').style('font-size: 18px;')
-    ui.upload(multiple=True, label="Upload Contracts", auto_upload=True, on_upload=handle_contract_upload).props(add="accept='.docx,.doc,.pdf'")
-
-
-async def handle_contract_upload(e):
-    name = e.name
-    work_dir = new_work_dir()
-    try:
-        upload_filepath = write_binary_to_temp_file(name, e.content.read(), work_dir)
-        output_name = f"{getFilenameStringNoExtension(safe_filename(name))}_scanned.docx"
-        output_filepath = os.path.join(work_dir, output_name)
-        ui.notify("Scanning file...")
-        try:
-            flagged_count, ai_notice = await run.cpu_bound(scan_contract, upload_filepath, output_filepath)
-        except Exception as error:
-            ui.notify(failure_message(name, error), type='warning', multi_line=True, timeout=0, close_button=True)
-            return
-        with open(output_filepath, 'rb') as file:
-            scanned_document = file.read()
-    finally:
-        # Nothing from this upload stays on the server, whether the scan succeeded or failed
-        remove_work_dir(work_dir)
-    if ai_notice:
-        ui.notify(f"{name}: {ai_notice}", type='warning', multi_line=True, timeout=0, close_button=True)
-    if flagged_count:
-        ui.notify(f"{name}: {flagged_count} passage(s) of potential problem language flagged. Downloading scan.", type='negative')
-    else:
-        ui.notify(f"{name}: no problem language found. Downloading scan (FAR clauses are still highlighted).", type='positive')
-    # Sent as bytes over this user's own connection, so no URL is created that someone else could open
-    ui.download(scanned_document, output_name)
 
 # Scans a contract and writes the annotated copy; returns the number of passages flagged.
 def scan_file(filepath, output_filepath):
@@ -201,10 +134,31 @@ def review_label(ai_notice):
 # Flags problem language with the LLM named in .env (US-12), or with the TF-IDF matcher when no LLM
 # is configured. If the LLM call fails, the scan falls back to the matcher instead of failing.
 def flag_problem_language(contract_txt, flagged_txt):
+    return _review_with_fallback(
+        lambda: llm_flag_problem_language(TNC_MATRIX_PATH, contract_txt, flagged_txt),
+        lambda: _flag_problem_language(TNC_MATRIX_PATH, contract_txt, flagged_txt, SIMILARITY_THRESHOLD))
+
+# Same review and fallback as flag_problem_language, but returns the flags as a list of
+# (flagged text, details) instead of writing them, so the workbench can show them (US-19)
+def flag_problem_language_data(contract_text):
+    tnc_dictionary = load_tnc_matrix(TNC_MATRIX_PATH)
+    return _review_with_fallback(lambda: _ai_flags(contract_text, tnc_dictionary),
+                                 lambda: _matcher_flags(contract_text, tnc_dictionary))
+
+def _ai_flags(contract_text, tnc_dictionary):
+    issues = review_contract(contract_text, tnc_dictionary)
+    return [(issue["quote"], _issue_details(issue, tnc_dictionary)) for issue in issues]
+
+def _matcher_flags(contract_text, tnc_dictionary):
+    return list(flag_sentences(tnc_dictionary, contract_text, SIMILARITY_THRESHOLD).items())
+
+# Runs the AI review when an LLM is configured, otherwise the matcher. Returns the result and a notice for
+# the reviewer when the AI review was configured but could not run, in which case the matcher is used.
+def _review_with_fallback(ai_review, basic_matcher):
     provider = provider_name()
     if provider:
         try:
-            return llm_flag_problem_language(TNC_MATRIX_PATH, contract_txt, flagged_txt), None
+            return ai_review(), None
         except LLMConfigError as error:
             logger.warning("AI review not run: %s", error)
             reason = str(error)
@@ -214,7 +168,31 @@ def flag_problem_language(contract_txt, flagged_txt):
         ai_notice = f"AI review unavailable, so the basic matcher was used. {reason}"
     else:
         ai_notice = None
-    return _flag_problem_language(TNC_MATRIX_PATH, contract_txt, flagged_txt, SIMILARITY_THRESHOLD), ai_notice
+    return basic_matcher(), ai_notice
+
+# Scans a contract like scan_contract and also returns the results the workbench shows
+# (scan_results.build_results). on_stage is called with the name of each step before it starts,
+# so the caller can show progress, or stop the scan by raising an exception. The annotate step also
+# passes the AI notice, so the caller can say the matcher was used while the scan is still running.
+def scan_contract_with_results(filepath, output_filepath, on_stage=lambda stage, ai_notice=None: None):
+    work_dir = os.path.dirname(os.path.abspath(output_filepath))
+    contract_txt = os.path.join(work_dir, 'contract_to_txt.txt')
+    flagged_txt = os.path.join(work_dir, 'flagged_contract_to_txt.txt')
+    file_to_highlight = os.path.join(work_dir, 'flagged_contract_to_docx.docx')
+
+    on_stage("extract")
+    convert_to_txt(filepath, contract_txt)
+    with open(contract_txt, 'r', encoding='utf-8') as file:
+        contract_text = file.read()
+    on_stage("review")
+    flags, ai_notice = flag_problem_language_data(contract_text)
+    on_stage("annotate", ai_notice)
+    write_flagged_text(contract_text, flags, flagged_txt)
+    txt_to_docx(flagged_txt, file_to_highlight)
+    label = review_label(ai_notice)
+    annotate_contract(FAR_CLAUSE_MATRIX_PATH, file_to_highlight, output_filepath, label)
+    far_clauses, far_rows = far_matches(contract_text, FAR_CLAUSE_MATRIX_PATH)
+    return build_results(contract_text, flags, far_clauses, far_rows, label, ai_notice)
 
 def getFilenameStringNoExtension(filename):
     temp_list = filename.split(".")
@@ -255,35 +233,204 @@ def write_binary_to_temp_file(name, binary, work_dir):
     return filepath
 
 ##########################################################################################
+# Scans (US-19). Each upload is scanned in its own thread; the pipeline is ordinary CPU work, and a
+# thread per scan is enough for the handful of OSP reviewers using the app at once.
 
-@ui.page("/")
-def index():
-    ui.add_head_html("<link rel='stylesheet' href='/static/style.css'/>")
-    ui.label("Choose the feature you would like to access:").style("font-size: 30px;")
-    with ui.element().style("""
-                            display: flex;
-                            width: 100vw;
-                            justify-content: center;
-                            height: calc(100vh - 50px);
-                            align-items: center;
-                            position: absolute;
-                            top: 50px;
-                            left: 0;"""):
-        ui.link("AI Contract Scanner", contract_scanner).classes("page-button").style("background: #0b2341; margin-right: 50px;")
-        ui.link("Subcontractor Agreement Scanner", subcontract_scanner).classes("page-button").style("background: #E87722;")
+ACCEPTED_EXTENSIONS = (".docx", ".doc", ".pdf")
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # the limit the workbench tells reviewers about
 
-if __name__ in {"__main__", "__mp_main__"}:
-    app.add_static_files("/static", STATIC_DIR)
-    # temp/ is deliberately not served: it holds uploaded contracts while they are scanned.
-    # on_startup runs once in the server process only, never in the scan worker processes,
-    # so it cannot delete the working directory of a scan in progress.
-    app.on_startup(remove_stale_work_dirs)
-    if __name__ == "__main__":
-        try:
-            check_matrices()
-        except ConfigError as error:
-            raise SystemExit(f"Configuration error: {error}")
-    if NATIVE:
-        ui.run(native=True, reload=False, port=PORT)
+class ScanCancelled(Exception):
+    pass
+
+# One uploaded contract and its scan. Stages: queued, extract, review, annotate, then done, failed or
+# cancelled. Kept in memory only; the upload and the intermediate files leave the disk when the scan ends.
+@dataclass
+class Scan:
+    id: str
+    filename: str  # as uploaded; only shown to the reviewer, never used as a path
+    docx_name: str  # the annotated copy's download name
+    stage: str = "queued"
+    started_at: float = field(default_factory=time.monotonic)
+    finished_at: float | None = None
+    ai_notice: str | None = None
+    error: str | None = None
+    flagged_count: int = 0
+    results: dict | None = None
+    docx_bytes: bytes | None = None
+    cancelled: bool = False
+
+    def elapsed_seconds(self):
+        end = self.finished_at if self.finished_at is not None else time.monotonic()
+        return round(end - self.started_at, 1)
+
+# Every scan of this server session, by id; a restart forgets them
+_scans = {}
+_scans_lock = threading.Lock()
+
+# Runs one scan in its own thread. Only the annotated copy is kept, in memory, for download.
+def run_scan(scan, upload):
+    try:
+        results, docx_bytes = _scan_in_work_dir(scan, upload)
+        if scan.cancelled:
+            raise ScanCancelled
+    except ScanCancelled:
+        _end(scan, "cancelled")
+    except Exception as error:
+        scan.error = failure_message(scan.filename, error)
+        _end(scan, "failed")
     else:
-        ui.run(reload=False, host=HOST, port=PORT)
+        scan.results, scan.docx_bytes = results, docx_bytes
+        scan.flagged_count, scan.ai_notice = len(results["flags"]), results["ai_notice"]
+        _end(scan, "done")
+
+# Scans the upload in a working directory of its own, which is removed before the scan is marked as ended,
+# whatever the outcome, so nothing from the upload is on disk by the time the reviewer sees the result
+def _scan_in_work_dir(scan, upload):
+    work_dir = new_work_dir()
+    try:
+        upload_filepath = write_binary_to_temp_file(scan.filename, upload, work_dir)
+        output_filepath = os.path.join(work_dir, scan.docx_name)
+        results = scan_contract_with_results(upload_filepath, output_filepath,
+                                             lambda stage, ai_notice=None: _set_stage(scan, stage, ai_notice))
+        with open(output_filepath, 'rb') as file:
+            return results, file.read()
+    finally:
+        remove_work_dir(work_dir)
+
+# Cancelling is checked between steps: a step in progress finishes, then the scan stops with no results.
+# The notice is written before the stage, so a reviewer who sees the annotate step also sees the notice.
+def _set_stage(scan, stage, ai_notice=None):
+    if scan.cancelled:
+        raise ScanCancelled
+    if ai_notice is not None:
+        scan.ai_notice = ai_notice
+    scan.stage = stage
+
+# The stage is written last, so a reviewer who sees "done" can fetch the results
+def _end(scan, stage):
+    scan.finished_at = time.monotonic()
+    scan.stage = stage
+
+##########################################################################################
+# API used by the workbench (frontend/). Errors are returned as {"detail": message}.
+# There is no login yet (US-22, US-8): anyone who can reach the server can use it, so it listens
+# on 127.0.0.1 unless AICR_HOST says otherwise.
+
+app = FastAPI(title="AU Contract Review")
+
+# Returns the uploaded bytes, or rejects the upload before anything is written to disk
+def _read_upload(file, extensions, wrong_type_message):
+    if os.path.splitext(file.filename or "")[1].lower() not in extensions:
+        raise HTTPException(400, wrong_type_message)
+    upload = file.file.read(MAX_UPLOAD_BYTES + 1)
+    if not upload:
+        raise HTTPException(400, "The file is empty.")
+    if len(upload) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "The file is larger than 25 MB.")
+    return upload
+
+NO_SUCH_SCAN = "No scan with this id. It may have been deleted, or the server restarted."
+
+def _get_scan(scan_id):
+    with _scans_lock:
+        scan = _scans.get(scan_id)
+    if scan is None:
+        raise HTTPException(404, NO_SUCH_SCAN)
+    return scan
+
+def _get_finished_scan(scan_id):
+    scan = _get_scan(scan_id)
+    if scan.stage != "done":
+        raise HTTPException(409, "The scan has not finished.")
+    return scan
+
+@app.post("/api/scans", status_code=202)
+def start_scan(file: UploadFile):
+    upload = _read_upload(file, ACCEPTED_EXTENSIONS, "Only .docx, .doc, or .pdf files can be scanned.")
+    scan = Scan(id=secrets.token_urlsafe(16), filename=file.filename,
+                docx_name=f"{getFilenameStringNoExtension(safe_filename(file.filename))}_scanned.docx")
+    with _scans_lock:
+        _scans[scan.id] = scan
+    # A daemon thread does not hold up stopping the server; a working directory it leaves is removed on the next start
+    threading.Thread(target=run_scan, args=(scan, upload), daemon=True).start()
+    return {"id": scan.id, "filename": scan.filename, "stage": scan.stage}
+
+@app.get("/api/scans/{scan_id}")
+def scan_status(scan_id: str):
+    scan = _get_scan(scan_id)
+    return {
+        "id": scan.id,
+        "filename": scan.filename,
+        "stage": scan.stage,
+        "review_method": review_method(scan.ai_notice),
+        "elapsed_seconds": scan.elapsed_seconds(),
+        "flagged_count": scan.flagged_count,
+        "ai_notice": scan.ai_notice,
+        "error": scan.error,
+    }
+
+@app.get("/api/scans/{scan_id}/results")
+def get_results(scan_id: str):
+    return _get_finished_scan(scan_id).results
+
+@app.get("/api/scans/{scan_id}/download")
+def download_scan(scan_id: str):
+    scan = _get_finished_scan(scan_id)
+    # safe_filename leaves only plain ASCII characters and no quotes, so the name can go in the header as is
+    return Response(scan.docx_bytes,
+                    media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    headers={"Content-Disposition": f'attachment; filename="{scan.docx_name}"'})
+
+# Forgets a scan; a scan still running stops at its next step
+@app.delete("/api/scans/{scan_id}", status_code=204)
+def delete_scan(scan_id: str):
+    with _scans_lock:
+        scan = _scans.pop(scan_id, None)
+    if scan is None:
+        raise HTTPException(404, NO_SUCH_SCAN)
+    scan.cancelled = True
+    return Response(status_code=204)
+
+@app.get("/api/config")
+def get_config():
+    provider = provider_name()
+    return {"review_method": review_method(), "provider": provider, "model": model_name() if provider else None}
+
+# Checks a subcontractor's audit report for findings (US-3b). Kept for the subcontract scanner,
+# which has no screen in the workbench yet.
+@app.post("/api/subcontract-scans")
+def scan_subcontract(file: UploadFile):
+    upload = _read_upload(file, (".pdf",), "Only .pdf files can be scanned.")
+    work_dir = new_work_dir()
+    try:
+        return {"flagged": pdf_to_txt.scan_for_findings(write_binary_to_temp_file(file.filename, upload, work_dir))}
+    except Exception as error:
+        raise HTTPException(422, failure_message(file.filename, error)) from None
+    finally:
+        remove_work_dir(work_dir)
+
+# Serves the built workbench at /. Any other path that is not a file gets index.html, so a reload always
+# lands in the app; unknown /api/ paths still get a 404. temp/ is deliberately not served.
+class Workbench(StaticFiles):
+    async def get_response(self, path, scope):
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as error:
+            if error.status_code != 404 or scope["path"].startswith("/api/"):
+                raise
+            return await super().get_response("index.html", scope)
+
+if os.path.isdir(FRONTEND_DIST):
+    app.mount("/", Workbench(directory=FRONTEND_DIST, html=True), name="workbench")
+else:
+    @app.get("/", response_class=PlainTextResponse)
+    def workbench_not_built():
+        return "The workbench has not been built. Run npm ci and then npm run build in frontend/, then restart the server."
+
+if __name__ == "__main__":
+    try:
+        check_matrices()
+    except ConfigError as error:
+        raise SystemExit(f"Configuration error: {error}")
+    remove_stale_work_dirs()
+    uvicorn.run(app, host=HOST, port=PORT)
