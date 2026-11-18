@@ -10,7 +10,7 @@ MIN_QUOTE_LENGTH = 20
 
 # Replaces llm_review.review_contract: flags the contract's first paragraph that is long enough to be
 # located, against the first Common Problem of the first matrix sheet that has one
-def fake_review_contract(contract_text, tnc_dictionary):
+def fake_review_contract(contract_text, tnc_dictionary, before_retry=None):
     category = next(name for name, sheet in tnc_dictionary.items() if sheet.get("Common Problems"))
     quote = next((line.strip() for line in contract_text.split("\n") if len(line.strip()) >= MIN_QUOTE_LENGTH), None)
     if quote is None:

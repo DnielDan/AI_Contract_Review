@@ -91,6 +91,11 @@ To switch providers later, change `LLM_PROVIDER` and fill in that provider's key
 | `AI review is not set up ... _API_KEY is not set in .env` | The key line for the chosen provider is empty, or `.env` was not saved | Paste the key on that line, save `.env`, and restart |
 | `AI review is not set up ... Unknown LLM_PROVIDER` | `LLM_PROVIDER` is misspelled | Use `anthropic`, `gemini`, or `openrouter` |
 | `Could not review ... did not return a usable result` | The key is wrong, the model no longer exists, the provider is rate-limiting you, or the service is down | Check the log in the terminal for the exact error; check the key, try another `LLM_MODEL`, or try again later |
+| `Could not review ... did not answer in time` | The provider took longer than `LLM_TIMEOUT_SECONDS` (default 300) | Try again later, or raise `LLM_TIMEOUT_SECONDS` |
+| `Could not review ... was cut off before it finished` | The reply reached its output limit | Raise `LLM_MAX_TOKENS`, or set `LLM_EFFORT=low` so the model spends less of the limit thinking |
+| `AI review is not set up ... LLM_TIMEOUT_SECONDS / LLM_MAX_TOKENS / LLM_EFFORT must be ...` | One of the optional limits has an invalid value | Fix or empty that line in `.env`, then restart |
+
+Only one contract is scanned at a time, so several uploads do not hit the provider's rate limits together; the others wait as "Queued" and can be cancelled while they wait.
 
 **Keeping keys and contracts safe**
 - Never commit `.env` (git ignores it) and never paste a key into chat, issues, or code.

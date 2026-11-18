@@ -26,7 +26,7 @@ def test_full_scan_of_docx_produces_annotated_output(tmp_path, monkeypatch, fake
 def test_scan_with_results_reports_each_step_and_matches_the_annotated_copy(tmp_path, monkeypatch, fake_ai):
     # The AI review is replaced with one fixed flag, so the test only takes the time of the other steps
     flag = ("RESEARCH AGREEMENT 382", {"Problem Category": "Test category"})
-    monkeypatch.setattr(main, "ai_flags", lambda text: [flag])
+    monkeypatch.setattr(main, "ai_flags", lambda text, before_retry=None: [flag])
     stages, output = [], tmp_path / "scanned.docx"
     results = main.scan_contract_with_results(SAMPLE_DOCX, str(output), stages.append)
 

@@ -10,7 +10,7 @@ flag_FAR_clauses.py.
 import json
 import re
 
-from llm_providers import generate_structured
+from llm_providers import UnreadableReplyError, generate_structured
 
 
 # The structured reply the model must return; category is limited to the matrix's sheet names
@@ -129,17 +129,27 @@ def _issue_details(issue, tnc_dictionary):
 
 
 # Sends the contract to the configured LLM and returns its issues (quote, category, matched problem,
-# justification, suggested change, confidence)
-# A reply that is not in the expected shape is requested again once before giving up.
-def review_contract(contract_text, tnc_dictionary):
+# justification, suggested change, confidence).
+# A reply that cannot be read, or is not a list of issues, is asked for once more: MAX_REPLY_ATTEMPTS is
+# the most replies one contract can use. Any other failure (timeout, reply cut off at the output limit,
+# rate limit, configuration) is raised at once. before_retry is called before the second request, so the
+# caller can stop a cancelled scan instead of spending another request on it.
+def review_contract(contract_text, tnc_dictionary, before_retry=lambda: None):
     schema = _issue_schema(tnc_dictionary.keys())
     prompt = _build_prompt(contract_text, tnc_dictionary)
+    last_error = None
     for attempt in range(MAX_REPLY_ATTEMPTS):
-        reply = generate_structured(prompt, schema, "report_contract_issues")
+        if attempt:
+            before_retry()
+        try:
+            reply = generate_structured(prompt, schema, "report_contract_issues")
+        except UnreadableReplyError as error:
+            last_error = error
+            continue
         issues = _decoded(reply.get("issues", []) if isinstance(reply, dict) else None)
         if isinstance(issues, list):
             return [issue for issue in map(_as_issue, issues) if issue and issue.get("quote")]
-    raise ValueError(f"The model did not return a list of issues after {MAX_REPLY_ATTEMPTS} attempts")
+    raise ValueError(f"The model did not return a list of issues after {MAX_REPLY_ATTEMPTS} attempts") from last_error
 
 
 MAX_REPLY_ATTEMPTS = 2

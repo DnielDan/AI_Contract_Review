@@ -162,6 +162,38 @@ def test_delete_cancels_a_running_scan_and_forgets_it(client, paused_pipeline, t
     assert client.delete(f"/api/scans/{scan_id}").status_code == 404
 
 
+def test_contract_scans_run_one_at_a_time(client, monkeypatch, wait_for_scan):
+    running, most_at_once, lock = [], [], threading.Lock()
+
+    def scan(path, output, on_stage):
+        with lock:
+            running.append(path)
+            most_at_once.append(len(running))
+        on_stage("review")
+        time.sleep(0.2)
+        with open(output, "wb") as file:
+            file.write(b"annotated")
+        with lock:
+            running.remove(path)
+        return {"paragraphs": [], "flags": [], "far": [], "review_label": ""}
+    monkeypatch.setattr(main, "scan_contract_with_results", scan)
+    scan_ids = [client.post("/api/scans", files={"file": (f"c{n}.docx", b"contract")}).json()["id"] for n in range(3)]
+    assert [wait_for_scan(client, scan_id)["stage"] for scan_id in scan_ids] == ["done"] * 3
+    assert max(most_at_once) == 1
+
+
+def test_scan_waiting_for_its_turn_stays_queued_and_can_be_cancelled(client, paused_pipeline, tmp_path):
+    start_paused_scan(client)  # holds the turn until the pipeline is released
+    waiting_id = client.post("/api/scans", files={"file": ("second.docx", b"contract")}).json()["id"]
+    waiting = main._scans[waiting_id]
+    time.sleep(main.QUEUE_CHECK_SECONDS * 3)
+    assert client.get(f"/api/scans/{waiting_id}").json()["stage"] == "queued"
+    assert client.delete(f"/api/scans/{waiting_id}").status_code == 204
+    eventually(lambda: waiting.stage == "cancelled")  # while the first scan still holds the turn
+    assert waiting.results is None
+    assert len(os.listdir(tmp_path)) == 1  # only the running scan's working directory; the queued one wrote nothing
+
+
 def test_config_says_why_the_ai_review_is_not_set_up(client, monkeypatch):
     monkeypatch.delenv("LLM_PROVIDER")
     config = client.get("/api/config").json()

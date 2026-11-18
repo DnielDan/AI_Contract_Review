@@ -1,8 +1,8 @@
 """Keeps every test offline: a developer's .env may set LLM_PROVIDER and an API key, but tests must
 never call a hosted LLM or send contract text off the machine (US-15). LLM_PROVIDER is cleared before
-every test, and the functions that call a provider are replaced with ones that fail the test. Tests that
-need a full scan use the fake_ai fixture, which makes the AI review look set up and answers with a
-stand-in (fakes.py).
+every test, and the OpenAI and Anthropic SDK clients are replaced with ones that fail the test (tests of
+llm_providers put fake clients in their place). Tests that need a full scan use the fake_ai fixture,
+which makes the AI review look set up and answers with a stand-in (fakes.py).
 
 Also holds the API fixtures shared by the test files. They import main inside the fixture, so the
 browser test (test_e2e_workbench.py) can run with an interpreter that only has Playwright."""
@@ -21,14 +21,15 @@ def no_llm_provider(monkeypatch):
 @pytest.fixture(autouse=True)
 def no_provider_calls(monkeypatch):
     try:
-        import llm_providers
+        import anthropic
+        import openai
     except ImportError:  # the browser test's interpreter may not have the project's packages
         return
 
     def blocked(*args, **kwargs):
-        raise AssertionError("A test tried to call a hosted LLM; use the fake_ai fixture instead")
-    monkeypatch.setattr(llm_providers, "_openai_compatible", blocked)
-    monkeypatch.setattr(llm_providers, "_anthropic", blocked)
+        raise AssertionError("A test tried to call a hosted LLM; use the fake_ai fixture or a fake client")
+    monkeypatch.setattr(openai, "OpenAI", blocked)
+    monkeypatch.setattr(anthropic, "Anthropic", blocked)
 
 
 @pytest.fixture
@@ -43,12 +44,16 @@ def fake_ai(monkeypatch):
 
 @pytest.fixture
 def client(monkeypatch, tmp_path, fake_ai):
-    """The API with the AI review set up (fake_ai), a fresh list of scans, and working directories in tmp_path."""
+    """The API with the AI review set up (fake_ai), a fresh list of scans and scan queue, and working
+    directories in tmp_path."""
+    import threading
+
     from fastapi.testclient import TestClient
 
     import main
     monkeypatch.setattr(main, "TEMP_DIR", str(tmp_path))
     monkeypatch.setattr(main, "_scans", {})
+    monkeypatch.setattr(main, "_scan_turn", threading.Lock())
     return TestClient(main.app)
 
 

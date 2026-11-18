@@ -38,6 +38,27 @@ the browser):
    from the FAR Matrix (title, status, acceptance criteria, request to sponsor) after the first mention
    of each FAR clause. FAR clause numbers keep their status colors. The color legend explains all of this.
 
+### Limits on AI calls
+- **Timeout:** each request waits at most `LLM_TIMEOUT_SECONDS` (default 300) for the provider; for
+  Claude, whose reply is streamed, that is the longest pause allowed. A timeout fails the scan with
+  "did not answer in time" (`llm_providers.LLMTimeoutError`).
+- **No resending of a cut-off reply:** a reply that stops at its output limit (Claude `stop_reason`
+  `max_tokens`, or `finish_reason` `length` elsewhere) fails the scan at once with "cut off before it
+  finished" (`ReplyCutOffError`); sending the same request again would be cut off the same way. Raise
+  `LLM_MAX_TOKENS` (default 16000 for Claude, the provider's default otherwise) or lower `LLM_EFFORT`.
+- **At most two replies per contract:** a reply that cannot be read, or is not a list of issues, is
+  asked for once more (`llm_review.MAX_REPLY_ATTEMPTS`); anything else fails at once. Asking for raw
+  JSON when a model rejects forced tool calls does not count, since the rejection generates nothing.
+  The SDKs still retry connection errors, rate limits and server errors twice with backoff
+  (`SDK_MAX_RETRIES`).
+- **Effort:** `LLM_EFFORT` (low, medium, high) is sent as `output_config.effort` to Claude and as
+  `reasoning_effort` to OpenAI-compatible providers; empty means the model's default.
+- **One contract scan at a time** (`main._scan_turn_for`): the others stay "queued", with nothing on
+  disk, and can be cancelled while they wait. Cancelling is also checked before a second reply is asked
+  for; a request already sent finishes or times out.
+- Invalid values for these settings are reported like a missing key: uploads are turned down with the
+  reason (`llm_providers.configuration_problem`).
+
 The prompt tells the model to treat the contract text as data, not instructions, as a first guard
 against prompt injection (full security checks are US-13).
 
@@ -83,6 +104,8 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
   matcher fallback.
 - `tests/test_api.py`: uploads turned down while the AI is not set up, and a failed AI review failing
   the scan with its reason.
+- `tests/test_llm_limits.py`: timeouts, cut-off replies, the two-reply cap, effort and output limit,
+  invalid settings, using fake OpenAI and Anthropic clients.
 - `tests/test_config.py`: matrix paths and the startup matrix check.
 - `tests/test_tfidf_baseline.py`: the inherited matcher kept as the evaluation baseline.
 - `tests/conftest.py`: clears `LLM_PROVIDER` before every test and makes any real provider call fail
@@ -98,6 +121,8 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
 - AI-only scanning (sponsor decision, 11/18/2026): no matcher fallback; a failed AI review fails the
   scan with its reason; uploads are turned down while no provider is set up; the matcher moved to
   `evaluation/` as the baseline.
+- Limits on AI calls: request timeout, no resending of a cut-off reply, at most two replies per
+  contract, optional output limit and effort, one contract scan at a time (see "Limits on AI calls").
 
 **What the first live test showed (OpenRouter, free model)**
 - The free NVIDIA model used earlier (`nemotron-3-super-120b-a12b:free`) was removed from OpenRouter;
@@ -111,8 +136,6 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
   real key.
 
 **Open items**
-- Robustness: request timeout, no identical retry after a `max_tokens`/`length` cutoff, fewer stacked
-  retries, one AI scan at a time. These matter more now that an AI failure fails the scan.
 - US-23: hand-off guide for IT to add the approved provider's key once the agreement is signed.
 - When Claude or Gemini keys arrive: one test scan, then score on `dev` (more than one run).
 - Choose the provider and model (US-12). A hosted provider may be used on real contracts only after

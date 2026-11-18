@@ -7,6 +7,7 @@ import shutil
 import tempfile
 import threading
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile
@@ -17,7 +18,8 @@ from contract_to_txt import UnsupportedFileError, convert_to_txt, txt_to_docx
 from flag_FAR_clauses import annotate_contract
 from flag_problem_language import load_tnc_matrix, write_flagged_text
 from flag_FAR_clauses import read_far_matrix
-from llm_providers import LLMConfigError, configuration_problem, model_name, provider_name
+from llm_providers import (LLMConfigError, LLMTimeoutError, ReplyCutOffError, configuration_problem, model_name,
+                           provider_name)
 from llm_review import _issue_details, review_contract
 from scan_results import build_results, far_matches
 from dotenv import load_dotenv
@@ -112,12 +114,21 @@ def review_label():
 # details come from the Ts&Cs Matrix row the model named plus the model's own explanation. There is no
 # fallback to the TF-IDF matcher: OSP uses the tool only with an approved AI provider, so an AI failure
 # fails the scan with the reason. (The matcher is kept in evaluation/ as the accuracy baseline.)
-def ai_flags(contract_text):
+# before_retry is called before the AI review asks for a second reply, so a cancelled scan can stop there.
+def ai_flags(contract_text, before_retry=lambda: None):
     tnc_dictionary = load_tnc_matrix(TNC_MATRIX_PATH)
     try:
-        issues = review_contract(contract_text, tnc_dictionary)
+        issues = review_contract(contract_text, tnc_dictionary, before_retry)
+    except ScanCancelled:
+        raise
     except LLMConfigError as error:
         raise AIReviewError(f"{AI_NOT_SET_UP} ({error})") from error
+    except LLMTimeoutError as error:
+        raise AIReviewError(f"The AI service ({provider_name()}) did not answer in time. "
+                            "Try again later; details were logged.") from error
+    except ReplyCutOffError as error:
+        raise AIReviewError(f"The AI service's reply ({provider_name()}) was cut off before it finished. "
+                            "Ask IT to raise LLM_MAX_TOKENS or lower LLM_EFFORT; details were logged.") from error
     except Exception as error:
         raise AIReviewError(f"The AI service ({provider_name()}) did not return a usable result. "
                             "Try again later; details were logged.") from error
@@ -138,7 +149,7 @@ def scan_contract_with_results(filepath, output_filepath, on_stage=lambda stage:
     with open(contract_txt, 'r', encoding='utf-8') as file:
         contract_text = file.read()
     on_stage("review")
-    flags = ai_flags(contract_text)
+    flags = ai_flags(contract_text, before_retry=lambda: on_stage("review"))
     on_stage("annotate")
     write_flagged_text(contract_text, flags, flagged_txt)
     txt_to_docx(flagged_txt, file_to_highlight)
@@ -186,8 +197,10 @@ def write_binary_to_temp_file(name, binary, work_dir):
     return filepath
 
 ##########################################################################################
-# Scans (US-19). Each upload is scanned in its own thread; the pipeline is ordinary CPU work, and a
-# thread per scan is enough for the handful of OSP reviewers using the app at once.
+# Scans (US-19). Each upload is scanned in its own thread, but only one contract scan runs at a time:
+# the AI review sends the whole contract in one request, and several at once would run into the
+# provider's rate limits. The other steps take seconds, so the scans behind it wait, with nothing
+# written to disk yet, and stay "queued" until their turn.
 
 ACCEPTED_EXTENSIONS = (".docx", ".doc", ".pdf")
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # the limit the workbench tells reviewers about
@@ -218,11 +231,27 @@ class Scan:
 # Every scan of this server session, by id; a restart forgets them
 _scans = {}
 _scans_lock = threading.Lock()
+# Held by the contract scan that is running; the others wait for it
+_scan_turn = threading.Lock()
+QUEUE_CHECK_SECONDS = 0.2  # how often a waiting scan checks whether it was cancelled
+
+# Waits until no other contract scan is running. A scan cancelled while it waits stops without running.
+@contextmanager
+def _scan_turn_for(scan):
+    turn = _scan_turn  # the lock this scan waited for is the one it releases
+    while not turn.acquire(timeout=QUEUE_CHECK_SECONDS):
+        if scan.cancelled:
+            raise ScanCancelled
+    try:
+        yield
+    finally:
+        turn.release()
 
 # Runs one scan in its own thread. Only the annotated copy is kept, in memory, for download.
 def run_scan(scan, upload):
     try:
-        results, docx_bytes = _scan_in_work_dir(scan, upload)
+        with _scan_turn_for(scan):
+            results, docx_bytes = _scan_in_work_dir(scan, upload)
         if scan.cancelled:
             raise ScanCancelled
     except ScanCancelled:
@@ -248,7 +277,9 @@ def _scan_in_work_dir(scan, upload):
     finally:
         remove_work_dir(work_dir)
 
-# Cancelling is checked between steps: a step in progress finishes, then the scan stops with no results
+# Cancelling is checked while the scan waits for its turn, between steps, and before the AI review asks
+# for a second reply. A request already sent finishes (LLM_TIMEOUT_SECONDS bounds it), then the scan
+# stops with no results.
 def _set_stage(scan, stage):
     if scan.cancelled:
         raise ScanCancelled

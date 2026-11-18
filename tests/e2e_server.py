@@ -9,9 +9,10 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
+import anthropic  # noqa: E402
+import openai  # noqa: E402
 import uvicorn  # noqa: E402
 
-import llm_providers  # noqa: E402
 import main  # noqa: E402
 from fakes import fake_review_contract, fake_settings  # noqa: E402
 
@@ -23,5 +24,5 @@ def blocked(*args, **kwargs):
 if __name__ == "__main__":
     os.environ.update(fake_settings())  # after main loaded .env, so the fake settings win
     main.review_contract = fake_review_contract
-    llm_providers._openai_compatible = llm_providers._anthropic = blocked
+    openai.OpenAI = anthropic.Anthropic = blocked
     uvicorn.run(main.app, host=main.HOST, port=main.PORT)
