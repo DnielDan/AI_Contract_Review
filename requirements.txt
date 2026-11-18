@@ -1,6 +1,5 @@
 # Python 3.11. Install with: pip install -r requirements.txt
 docx2txt==0.8
-nicegui==1.4.23
 nltk==3.8.1
 olefile==0.47
 openpyxl==3.1.2
@@ -10,6 +9,11 @@ python-docx==1.2.0
 scikit-learn==1.4.2
 xlrd==2.0.2
 
+# Server for the workbench (US-19); the workbench itself is built from frontend/ with npm
+fastapi==0.163.2
+python-multipart==0.0.34
+uvicorn==0.54.0
+
 # AI review (US-12); only used when LLM_PROVIDER is set in .env
 anthropic==2.8.0
 openai==3.49.0
@@ -17,6 +21,4 @@ python-dotenv==1.2.3
 
 # Tests (run with: python -m pytest)
 pytest==9.1.1
-
-# Only needed for the desktop window (AICR_NATIVE=1)
-pywebview==6.2.1
+httpx==0.28.1

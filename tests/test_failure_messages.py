@@ -1,6 +1,4 @@
 """Tests for US-3a: failures are reported to the user, distinct from "no problems found"."""
-import asyncio
-import io
 import logging
 
 import pytest
@@ -10,36 +8,19 @@ import pdf_to_txt
 from contract_to_txt import UnsupportedFileError, convert_to_txt
 
 
-class FakeUpload:
-    def __init__(self, name, data):
-        self.name = name
-        self.content = io.BytesIO(data)
-
-
-@pytest.fixture
-def notifications(monkeypatch, tmp_path):
-    """Captures ui.notify calls and keeps uploads and outputs inside tmp_path."""
-    sent = []
-    monkeypatch.setattr(main.ui, "notify", lambda message, **options: sent.append((message, options.get("type"))))
-    monkeypatch.setattr(main.ui, "download", lambda src, filename=None: sent.append(("download", filename)))
-    monkeypatch.setattr(main, "TEMP_DIR", str(tmp_path))
-    monkeypatch.chdir(tmp_path)
-
-    async def run_inline(function, *args):
-        return function(*args)
-    monkeypatch.setattr(main.run, "cpu_bound", run_inline)
-    return sent
+def upload(client, name, data, url="/api/scans"):
+    return client.post(url, files={"file": (name, data)})
 
 
 def test_unsupported_file_type_raises_instead_of_reusing_the_previous_scan(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "contract_to_txt.txt").write_text("Text left over from the previous contract.", encoding="utf-8")
-    upload = tmp_path / "contract.rtf"
-    upload.write_text("{\\rtf1 not supported}", encoding="utf-8")
+    upload_path = tmp_path / "contract.rtf"
+    upload_path.write_text("{\\rtf1 not supported}", encoding="utf-8")
     with pytest.raises(UnsupportedFileError, match="'.rtf' files are not supported"):
-        convert_to_txt(str(upload))
+        convert_to_txt(str(upload_path))
     with pytest.raises(UnsupportedFileError):
-        main.scan_file(str(upload), str(tmp_path / "out.docx"))
+        main.scan_file(str(upload_path), str(tmp_path / "out.docx"))
     assert not (tmp_path / "out.docx").exists()
 
 
@@ -64,39 +45,33 @@ def test_failure_message_explains_known_problems_and_logs_unexpected_ones(caplog
     assert "Could not process b.pdf" in caplog.text
 
 
-def test_damaged_subcontract_pdf_is_reported_not_marked_clean(notifications):
-    main.handle_sub_upload(FakeUpload("audit.pdf", b"%PDF-1.4 this is not a real PDF"))
-    assert len(notifications) == 1
-    message, kind = notifications[0]
-    assert message.startswith("Could not process audit.pdf.") and kind == "warning"
-    assert "not flagged" not in message
+def test_damaged_subcontract_pdf_is_reported_not_marked_clean(client):
+    response = upload(client, "audit.pdf", b"%PDF-1.4 this is not a real PDF", "/api/subcontract-scans")
+    assert response.status_code == 422
+    message = response.json()["detail"]
+    assert message.startswith("Could not process audit.pdf.")
+    assert "flagged" not in response.json() and "not flagged" not in message
 
 
-def test_contract_scan_failure_is_reported(notifications):
-    asyncio.run(main.handle_contract_upload(FakeUpload("contract.rtf", b"{\\rtf1}")))
-    assert ("Scanning file...", None) in notifications
-    assert any(m.startswith("Could not process contract.rtf.") and k == "warning" for m, k in notifications)
-    assert not any(m == "download" for m, _ in notifications)
+def test_contract_scan_failure_is_reported(client, wait_for_scan):
+    started = upload(client, "contract.docx", b"not really a Word document")
+    assert started.status_code == 202 and started.json()["stage"] == "queued"
+    status = wait_for_scan(client, started.json()["id"])
+    assert status["stage"] == "failed"
+    assert status["error"].startswith("Could not process contract.docx.")
+    assert client.get(f"/api/scans/{status['id']}/download").status_code == 409
 
 
-@pytest.mark.parametrize("flagged, expected", [(0, "no problem language found"), (3, "3 passage(s) of potential problem language flagged")])
-def test_successful_scan_says_whether_anything_was_found(notifications, monkeypatch, flagged, expected):
-    def fake_scan(path, output):
-        with open(output, "wb") as file:
-            file.write(b"annotated")
-        return flagged, None
-    monkeypatch.setattr(main, "scan_contract", fake_scan)
-    asyncio.run(main.handle_contract_upload(FakeUpload("contract.docx", b"stand-in")))
-    assert any(expected in m for m, _ in notifications)
-    assert notifications[-1][0] == "download"
+@pytest.mark.parametrize("flagged", [0, 3])
+def test_successful_scan_says_whether_anything_was_found(client, wait_for_scan, fake_scan, flagged):
+    fake_scan(flagged=flagged)
+    status = wait_for_scan(client, upload(client, "contract.docx", b"stand-in").json()["id"])
+    assert (status["stage"], status["flagged_count"], status["error"]) == ("done", flagged, None)
+    assert client.get(f"/api/scans/{status['id']}/download").status_code == 200
 
 
-def test_ai_fallback_notice_is_shown(notifications, monkeypatch):
-    def fake_scan(path, output):
-        with open(output, "wb") as file:
-            file.write(b"annotated")
-        return 1, "AI review unavailable, so the basic matcher was used."
-    monkeypatch.setattr(main, "scan_contract", fake_scan)
-    asyncio.run(main.handle_contract_upload(FakeUpload("contract.docx", b"stand-in")))
-    assert any("AI review unavailable" in m and k == "warning" for m, k in notifications)
-    assert notifications[-1][0] == "download"
+def test_ai_fallback_notice_is_shown(client, wait_for_scan, fake_scan):
+    fake_scan(flagged=1, ai_notice="AI review unavailable, so the basic matcher was used.")
+    status = wait_for_scan(client, upload(client, "contract.docx", b"stand-in").json()["id"])
+    assert "AI review unavailable" in status["ai_notice"]
+    assert client.get(f"/api/scans/{status['id']}/download").status_code == 200

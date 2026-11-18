@@ -11,7 +11,7 @@
 > known limitations, and the active backlog.
 
 ## Setup
-Requires **Python 3.11** (developed and tested on 3.11.9). From the repository folder:
+Requires **Python 3.11** (developed and tested on 3.11.9) and **Node.js 22** (to build the workbench). From the repository folder:
 
 ```
 python -m venv .venv
@@ -23,18 +23,25 @@ pip install -r requirements.txt
 The reference matrices and the NLTK data the app needs are included in `supplementary_files/`, so no extra downloads are required.
 
 ## Running the app
+Build the workbench (the browser interface, in `frontend/`) once, and again after changing anything in `frontend/`. Then start the server:
 ```
+cd frontend
+npm ci
+npm run build
+cd ..
 python main.py
 ```
 
-This serves the landing page, the AI Contract Scanner (`/contractscanner`), and the Subcontractor
-Agreement Scanner (`/subscanner`) at http://127.0.0.1:8080. Launch options are set with environment variables:
+This serves the workbench at http://127.0.0.1:8080. Drop a contract on the left to scan it; the progress card shows each step. When the scan finishes, the contract is shown with its flagged passages and FAR clauses highlighted, each flag has a card on the right with the matrix guidance, and the download button saves the annotated `<name>_scanned.docx`. Scans are kept in memory for the session only, and an uploaded file is deleted from the server as soon as its scan ends. The subcontractor audit check has no screen yet; it is available to programs as `POST /api/subcontract-scans`.
+
+Launch options are set with environment variables:
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `AICR_HOST` | `127.0.0.1` | Address to listen on. `0.0.0.0` lets anyone on the network use the app; the app has no login yet (planned in US-8), so keep the default outside a controlled pilot. |
 | `AICR_PORT` | `8080` | Port to listen on. |
-| `AICR_NATIVE` | `0` | Set to `1` to open in a desktop window (requires `pywebview`) instead of the browser. |
+
+**Working on the workbench:** with `python main.py` running on port 8080, run `npm run dev` in `frontend/`. Vite serves the workbench on its own port, reloads it on every change, and passes `/api` calls to the Python server.
 
 ## Settings and AI review
 Settings can also go in a `.env` file in the repository folder: copy `.env.example` to `.env` and fill in what you need. `.env` is ignored by git, so API keys never reach the repository.
@@ -96,7 +103,13 @@ To switch providers later, change `LLM_PROVIDER` and fill in that provider's key
 python -m pytest
 ```
 
-The tests cover text extraction, matrix parsing, problem-language flagging, FAR clause highlighting, and a full scan of a sample contract. GitHub Actions runs them on Linux for every pull request and every push to `main` (`.github/workflows/tests.yml`); they run offline and never send contract text to an external service.
+The tests cover text extraction, matrix parsing, problem-language flagging, FAR clause highlighting, the workbench API, and a full scan of a sample contract. GitHub Actions builds the workbench and runs them on Linux for every pull request and every push to `main` (`.github/workflows/tests.yml`); they run offline and never send contract text to an external service.
+
+A browser test of the workbench (`tests/test_e2e_workbench.py`) is left out of the default run. It needs Playwright with Chromium (`pip install playwright` and `playwright install chromium`) and the built workbench:
+```
+python -m pytest -m e2e tests/test_e2e_workbench.py
+```
+If Playwright is installed in a different Python environment, run the test with that interpreter and set `AICR_E2E_PYTHON` to this project's `.venv` Python, which runs the server.
 
 ## Measuring accuracy
 `evaluation/` holds a labeled test set built from OSP's own markup of the sample contracts, and a script that scores a scanner against it:
@@ -113,13 +126,13 @@ Sample documents for trying each scanner are in `supplementary_files/samples_tes
 | AI Contract Scanner (`.docx`) | `0078-23 Adhikari - agreement.docx` | An annotated `<name>_scanned.docx` with flagged language and highlighted FAR clauses |
 | AI Contract Scanner (`.pdf`) | `0430-23 O'Brien - fully executed.pdf` | Same as above, from a PDF |
 | AI Contract Scanner (legacy `.doc`) | `Godwin - redline 12.5.23.doc` | Same as above, from a Word 97-2003 file |
-| Subcontractor Agreement Scanner | `24-00373 Subcontract Auburn University_FE (1).pdf` | "not flagged". This file is a subcontract, not an audit report, so it contains none of the audit-finding phrases the scanner looks for; a sample audit report is still needed to test the flagged case. |
+| Subcontractor audit check (`POST /api/subcontract-scans`) | `24-00373 Subcontract Auburn University_FE (1).pdf` | "not flagged". This file is a subcontract, not an audit report, so it contains none of the audit-finding phrases the scanner looks for; a sample audit report is still needed to test the flagged case. |
 
 `0264-23 Godwin - fully executed.pdf` is a scanned image with no text layer, so it produces an output with nothing flagged.
 
 ## What the app currently does
-- **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text. With an LLM set in `.env`, the LLM reviews the text against the Ts&Cs Matrix (see "Settings and AI review"); otherwise it compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove). In the output, the contract keeps its paragraphs: a paragraph with flagged language is highlighted yellow, everything the tool adds (Ts&Cs guidance, FAR Matrix notes on each FAR clause, AI text) is highlighted gray, text written by the AI is also italic blue, and a line at the top says whether the AI review or the basic matcher was used.
-- **Subcontractor Agreement Scanner:** searches an uploaded PDF for three audit-finding phrases (for example, "Material weaknesses identified? Yes") and reports flagged or not flagged.
+- **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text. With an LLM set in `.env`, the LLM reviews the text against the Ts&Cs Matrix (see "Settings and AI review"); otherwise it compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove). In the output, the contract keeps its paragraphs: a paragraph with flagged language is highlighted yellow, everything the tool adds (Ts&Cs guidance, FAR Matrix notes on each FAR clause, AI text) is highlighted gray, text written by the AI is also italic blue, and a line at the top says whether the AI review or the basic matcher was used. The workbench shows the same flags on the contract in the browser, with a card for each.
+- **Subcontractor Agreement Scanner:** searches an uploaded PDF for three audit-finding phrases (for example, "Material weaknesses identified? Yes") and reports flagged or not flagged. It has no screen in the workbench yet (API only).
 - Without `LLM_PROVIDER` set, all analysis is local pattern and similarity matching and no contract text leaves the machine.
 
 ## Project history
@@ -145,4 +158,4 @@ The Spring 2024 teams planned the features below. This table records what was ac
 | Adjustment justification | Partial: the output shows the matrix's "Why" text for each matched category |
 | Adaptive negotiating (learning from past negotiations) | Not implemented |
 | Automated risk assessment | Not implemented |
-| User interface | Implemented: a landing page with two scanners |
+| User interface | Implemented: a browser workbench for contract scans (FastAPI server, React frontend); the subcontractor check has no screen yet |

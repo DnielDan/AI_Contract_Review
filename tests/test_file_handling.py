@@ -1,6 +1,4 @@
 """Tests for US-2: each upload is isolated, nothing is left on the server, and filenames are safe."""
-import asyncio
-import io
 import os
 from concurrent.futures import ThreadPoolExecutor
 
@@ -9,24 +7,6 @@ from docx import Document
 import main
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "..", "supplementary_files", "samples_test_set")
-
-
-class FakeUpload:
-    def __init__(self, name, data):
-        self.name = name
-        self.content = io.BytesIO(data)
-
-
-def _patch_ui(monkeypatch, tmp_path):
-    sent = []
-    monkeypatch.setattr(main.ui, "notify", lambda message, **options: sent.append(("notify", message)))
-    monkeypatch.setattr(main.ui, "download", lambda src, filename=None: sent.append(("download", src, filename)))
-    monkeypatch.setattr(main, "TEMP_DIR", str(tmp_path))
-
-    async def run_inline(function, *args):
-        return function(*args)
-    monkeypatch.setattr(main.run, "cpu_bound", run_inline)
-    return sent
 
 
 def test_safe_filename_drops_folders_and_unusual_characters():
@@ -47,25 +27,23 @@ def test_upload_cannot_be_written_outside_its_working_directory(tmp_path):
     assert not (tmp_path / "escaped.docx").exists()
 
 
-def test_successful_scan_sends_bytes_and_leaves_nothing_on_the_server(monkeypatch, tmp_path):
-    sent = _patch_ui(monkeypatch, tmp_path)
-
-    def fake_scan(path, output):
-        assert os.path.dirname(path) == os.path.dirname(output)  # upload and output share one private directory
-        with open(output, "wb") as file:
-            file.write(b"annotated contract")
-        return 2, None
-    monkeypatch.setattr(main, "scan_contract", fake_scan)
-
-    asyncio.run(main.handle_contract_upload(FakeUpload("Lawson agreement.docx", b"contract")))
-    assert sent[-1] == ("download", b"annotated contract", "Lawson agreement_scanned.docx")
+def test_successful_scan_sends_bytes_and_leaves_nothing_on_the_server(client, wait_for_scan, fake_scan, tmp_path):
+    calls = fake_scan(flagged=2)
+    started = client.post("/api/scans", files={"file": ("Lawson agreement.docx", b"contract")})
+    assert wait_for_scan(client, started.json()["id"])["stage"] == "done"
+    download = client.get(f"/api/scans/{started.json()['id']}/download")
+    assert download.content == b"annotated contract"
+    assert download.headers["content-disposition"] == 'attachment; filename="Lawson agreement_scanned.docx"'
+    (path, output), = calls
+    assert os.path.dirname(path) == os.path.dirname(output)  # upload and output share one private directory
     assert os.listdir(tmp_path) == []
 
 
-def test_failed_scan_leaves_nothing_on_the_server(monkeypatch, tmp_path):
-    _patch_ui(monkeypatch, tmp_path)
-    asyncio.run(main.handle_contract_upload(FakeUpload("contract.rtf", b"{\\rtf1}")))
-    main.handle_sub_upload(FakeUpload("damaged.pdf", b"%PDF-1.4 not really a PDF"))
+def test_failed_scan_leaves_nothing_on_the_server(client, wait_for_scan, tmp_path):
+    started = client.post("/api/scans", files={"file": ("contract.docx", b"not really a Word document")})
+    assert wait_for_scan(client, started.json()["id"])["stage"] == "failed"
+    damaged = client.post("/api/subcontract-scans", files={"file": ("damaged.pdf", b"%PDF-1.4 not really a PDF")})
+    assert damaged.status_code == 422
     assert os.listdir(tmp_path) == []
 
 

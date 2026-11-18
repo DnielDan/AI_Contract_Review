@@ -4,10 +4,13 @@ This guide is for developers working on the AI contract review (US-7, US-12). To
 and turn the AI review on, follow "Adding an API key" in the main [README](../README.md).
 
 ## How it works
-When a contract is scanned (`main.scan_contract`):
+When a contract is scanned (`main.scan_contract`; the workbench uses `main.scan_contract_with_results`,
+which runs the same steps and also returns the flags as data for the browser):
 
 1. The upload is converted to plain text (`contract_to_txt.py`).
-2. `main.flag_problem_language` decides how problem language is flagged:
+2. `main.flag_problem_language` decides how problem language is flagged (`main.flag_problem_language_data`
+   in the workbench, with the same choice and fallback, calling `llm_review.review_contract` and
+   `flag_problem_language.flag_sentences` directly):
    - **`LLM_PROVIDER` set in `.env`:** `llm_review.llm_flag_problem_language` sends the contract text
      and the Ts&Cs Matrix's "Common Problems" to the model. The model returns each problem passage
      with the matrix sheet (category) and the Common Problem it matches, a short explanation, a
@@ -40,7 +43,8 @@ against prompt injection (full security checks are US-13).
 |---|---|
 | `llm_providers.py` | Sends a prompt to the provider named by `LLM_PROVIDER` and returns structured JSON. OpenRouter and Gemini use the OpenAI-compatible API (`_OPENAI_COMPATIBLE_PRESETS`); Claude uses the Anthropic SDK with structured outputs (`_anthropic`). |
 | `llm_review.py` | Builds the prompt (`_build_prompt`) and the reply format (`_issue_schema`), reads the reply (`review_contract`), looks up matrix guidance (`_issue_details`), and writes the flagged text (`llm_flag_problem_language`). |
-| `main.py` | Reads settings from `.env`, checks the matrices at startup (`check_matrices`), and chooses AI or matcher with the fallback (`flag_problem_language`). |
+| `main.py` | Reads settings from `.env`, checks the matrices at startup (`check_matrices`), chooses AI or matcher with the fallback (`_review_with_fallback`, used by `flag_problem_language` and `flag_problem_language_data`), and serves the workbench and its API. |
+| `scan_results.py` | Turns a scan's flags and FAR clauses into the data the workbench shows (`build_results`). |
 | `evaluation/scanners.py` | The `llm` scanner used to score the AI review on the labeled test set. |
 | `.env.example` | Template for `.env`, which holds the settings and API keys and is never committed. |
 

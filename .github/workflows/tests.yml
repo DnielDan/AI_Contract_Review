@@ -19,6 +19,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Fails the run on a TypeScript error in the workbench
+      - name: Build the workbench
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
       # Tests run fully offline on the bundled sample contracts; nothing is sent to an external service
       - name: Run tests
         run: python -m pytest
