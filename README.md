@@ -93,6 +93,7 @@ To switch providers later, change `LLM_PROVIDER` and fill in that provider's key
 | `Could not review ... did not return a usable result` | The key is wrong, the model no longer exists, the provider is rate-limiting you, or the service is down | Check the log in the terminal for the exact error; check the key, try another `LLM_MODEL`, or try again later |
 | `Could not review ... did not answer in time` | The provider took longer than `LLM_TIMEOUT_SECONDS` (default 300) | Try again later, or raise `LLM_TIMEOUT_SECONDS` |
 | `Could not review ... was cut off before it finished` | The reply reached its output limit | Raise `LLM_MAX_TOKENS`, or set `LLM_EFFORT=low` so the model spends less of the limit thinking |
+| `Could not process ... No text could be read from this PDF` | The PDF is a scanned image with no text layer | Run it through OCR (text recognition), or upload the Word version |
 | `AI review is not set up ... LLM_TIMEOUT_SECONDS / LLM_MAX_TOKENS / LLM_EFFORT must be ...` | One of the optional limits has an invalid value | Fix or empty that line in `.env`, then restart |
 
 Only one contract is scanned at a time, so several uploads do not hit the provider's rate limits together; the others wait as "Queued" and can be cancelled while they wait.
@@ -134,7 +135,7 @@ Sample documents for trying each scanner are in `supplementary_files/samples_tes
 | AI Contract Scanner (legacy `.doc`) | `Godwin - redline 12.5.23.doc` | Same as above, from a Word 97-2003 file |
 | Subcontractor audit check (`POST /api/subcontract-scans`) | `24-00373 Subcontract Auburn University_FE (1).pdf` | "not flagged". This file is a subcontract, not an audit report, so it contains none of the audit-finding phrases the scanner looks for; a sample audit report is still needed to test the flagged case. |
 
-`0264-23 Godwin - fully executed.pdf` is a scanned image with no text layer, so it produces an output with nothing flagged.
+`0264-23 Godwin - fully executed.pdf` is a scanned image with no text layer. Both scanners report it as unreadable ("No text could be read from this PDF; it is probably a scanned image…") instead of as a contract with no problems, and nothing is sent to the AI. Run such a file through OCR (text recognition) first, or upload the Word version.
 
 ## What the app currently does
 - **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text, and the AI provider set in `.env` reviews it against the "Common Problems" in the Contract Ts&Cs Matrix (see "Settings and AI review"). Each flagged passage is marked in the output with the matrix's category, Auburn's preferred language, "Why" explanation, and suggested first response to the sponsor, plus the AI's own explanation, suggested change, and confidence. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove). In the output, the contract keeps its paragraphs: a paragraph with flagged language is highlighted yellow, everything the tool adds (Ts&Cs guidance, FAR Matrix notes on each FAR clause, AI text) is highlighted gray, text written by the AI is also italic blue, and a line at the top names the AI provider and model. The workbench shows the same flags on the contract in the browser, with a card for each.

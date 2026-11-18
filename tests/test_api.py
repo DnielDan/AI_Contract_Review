@@ -12,10 +12,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import main
+from contract_to_txt import NO_PDF_TEXT
 from fakes import FAKE_MODEL, FAKE_PROVIDER, fake_review_contract, fake_settings
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "..", "supplementary_files", "samples_test_set")
 SAMPLE_DOCX = "0078-23 Adhikari - agreement.docx"
+SCANNED_PDF = "0264-23 Godwin - fully executed.pdf"  # page images, no text layer
 STATUS_FIELDS = {"id", "filename", "stage", "elapsed_seconds", "flagged_count", "error"}
 
 
@@ -208,9 +210,29 @@ def test_config_names_the_provider_and_model_when_set_up(client, monkeypatch):
 
 
 def test_subcontract_scan_returns_whether_findings_were_flagged(client, tmp_path):
-    with open(os.path.join(SAMPLES, "0264-23 Godwin - fully executed.pdf"), "rb") as file:
+    # A subcontract, not an audit report, so none of the audit-finding phrases are in it (see README)
+    with open(os.path.join(SAMPLES, "24-00373 Subcontract Auburn University_FE (1).pdf"), "rb") as file:
         response = client.post("/api/subcontract-scans", files={"file": ("audit.pdf", file.read())})
-    assert response.status_code == 200 and isinstance(response.json()["flagged"], bool)
+    assert (response.status_code, response.json()) == (200, {"flagged": False})
+    assert os.listdir(tmp_path) == []
+
+
+def test_scanned_pdf_fails_before_the_ai_review_with_the_reason(client, monkeypatch, wait_for_scan, tmp_path):
+    reviewed = []
+    monkeypatch.setattr(main, "review_contract", lambda *args: reviewed.append(args) or [])
+    with open(os.path.join(SAMPLES, SCANNED_PDF), "rb") as file:
+        scan_id = client.post("/api/scans", files={"file": ("godwin.pdf", file.read())}).json()["id"]
+    status = wait_for_scan(client, scan_id)
+    assert (status["stage"], status["flagged_count"]) == ("failed", 0)
+    assert status["error"] == f"Could not process godwin.pdf. {NO_PDF_TEXT}"
+    assert reviewed == []  # nothing was sent to the AI
+    assert os.listdir(tmp_path) == []
+
+
+def test_subcontract_scan_of_a_scanned_pdf_is_an_error_not_unflagged(client, tmp_path):
+    with open(os.path.join(SAMPLES, SCANNED_PDF), "rb") as file:
+        response = client.post("/api/subcontract-scans", files={"file": ("audit.pdf", file.read())})
+    assert (response.status_code, response.json()) == (422, {"detail": f"Could not process audit.pdf. {NO_PDF_TEXT}"})
     assert os.listdir(tmp_path) == []
 
 

@@ -1,12 +1,14 @@
-from contract_to_txt import extract_pdf_text
+from contract_to_txt import extract_pdf_text, require_text
 import os
 
-# Converts pdf to txt
+# Converts pdf to txt. A PDF with no readable text (a scanned image) raises UnsupportedFileError and
+# writes nothing, rather than being reported as "not flagged".
 def pdf_to_txt(pdf_path):
     txt_fname = os.path.splitext(pdf_path)[0] + ".txt"
+    text = require_text(extract_pdf_text(pdf_path), '.pdf')
 
     with open(txt_fname, 'w', encoding="utf-8") as file:
-        file.write(extract_pdf_text(pdf_path))
+        file.write(text)
 
     return txt_fname
 
