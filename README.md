@@ -99,7 +99,7 @@ To switch providers later, change `LLM_PROVIDER` and fill in that provider's key
 
 Only one contract is scanned at a time, so several uploads do not hit the provider's rate limits together; the others wait as "Queued" and can be cancelled while they wait.
 
-**Keeping keys and contracts safe**
+**Keeping keys and contracts safe** (full statement for OSP and IT: [docs/DATA_HANDLING.md](docs/DATA_HANDLING.md))
 - Never commit `.env` (git ignores it) and never paste a key into chat, issues, or code.
 - If a key is exposed, delete it on the provider's site and create a new one.
 - Use only the sample contracts until OSP and Auburn IT approve a provider for real contracts: a hosted provider receives the contract text.

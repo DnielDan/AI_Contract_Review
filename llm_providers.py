@@ -41,6 +41,21 @@ _ANTHROPIC_DEFAULT_MODEL = "claude-opus-5-5"
 
 PROVIDERS = sorted([*_OPENAI_COMPATIBLE_PRESETS, "anthropic"])
 
+# The .env settings that hold API keys, and the shapes of the providers' keys (Anthropic sk-ant-...,
+# OpenRouter sk-or-v1-..., Google AIza...), so keys can be kept out of logs and out of the repository
+KEY_ENVS = ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY")
+KEY_PATTERN = re.compile(r"sk-ant-[A-Za-z0-9_-]{8,}|sk-or-v1-[A-Za-z0-9]{8,}|AIza[0-9A-Za-z_-]{20,}")
+REDACTED = "[redacted key]"
+
+
+# Returns text with every configured API key, and anything shaped like a provider key, replaced
+def redact_keys(text):
+    for key_env in KEY_ENVS:
+        value = os.environ.get(key_env, "").strip()
+        if len(value) >= 8:
+            text = text.replace(value, REDACTED)
+    return KEY_PATTERN.sub(REDACTED, text)
+
 
 # A problem with the .env settings (missing key, unknown provider, invalid limit), as opposed to a failed call
 class LLMConfigError(RuntimeError):

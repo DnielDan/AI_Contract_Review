@@ -59,8 +59,12 @@ the browser):
 - Invalid values for these settings are reported like a missing key: uploads are turned down with the
   reason (`llm_providers.configuration_problem`).
 
-The prompt tells the model to treat the contract text as data, not instructions, as a first guard
-against prompt injection (full security checks are US-13).
+The prompt fences the contract between markers made from a hash of the contract and tells the model,
+before and after it, to treat the contract as data, not instructions. That, the matrix-backed guidance,
+and the injection check (`python -m evaluation.injection_check --no-save`) are described in
+[DATA_HANDLING.md](DATA_HANDLING.md), with where contract text goes, what is logged, and how keys are
+kept out of logs and the repository (US-13). **Changing `_build_prompt` changes accuracy too: rescore on
+`dev` and rerun the injection check afterwards.**
 
 ### File map
 | File | What it does |
@@ -140,6 +144,8 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
 - When Claude or Gemini keys arrive: one test scan, then score on `dev` (more than one run).
 - Choose the provider and model (US-12). A hosted provider may be used on real contracts only after
   OSP and Auburn IT approve it under a data-protection agreement.
-- US-13: security checks (data handling, keys, prompt injection) for the chosen provider.
+- US-13: run the injection check against the chosen provider and model, and record the result in
+  DATA_HANDLING.md. The offline parts are done: no contract text or keys in the log, no keys in the
+  repository, the contract fenced in the prompt, text never rendered as HTML.
 - US-17: tune the prompt and model on the `dev` split.
 - Update the Cycle 2 report: it still names Azure OpenAI as the leading option.

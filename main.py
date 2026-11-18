@@ -19,7 +19,7 @@ from flag_FAR_clauses import annotate_contract
 from flag_problem_language import load_tnc_matrix, write_flagged_text
 from flag_FAR_clauses import read_far_matrix
 from llm_providers import (LLMConfigError, LLMTimeoutError, ReplyCutOffError, configuration_problem, model_name,
-                           provider_name)
+                           provider_name, redact_keys)
 from llm_review import _issue_details, review_contract
 from scan_results import build_results, far_matches
 from dotenv import load_dotenv
@@ -94,6 +94,20 @@ HOST = os.environ.get("AICR_HOST", "127.0.0.1")
 PORT = int(os.environ.get("AICR_PORT", "8080"))
 
 logger = logging.getLogger("aicr")
+
+# Keeps API keys out of the app's log (US-13). A provider's error can echo part of a key, and a failed AI
+# review is logged with its exception, so each record's message and exception text have keys replaced
+# (llm_providers.redact_keys). The log never gets contract text: only file names, steps, and errors.
+class RedactKeys(logging.Filter):
+    def filter(self, record):
+        if record.exc_info and not record.exc_text:
+            record.exc_text = logging.Formatter().formatException(record.exc_info)
+        if record.exc_text:
+            record.exc_text = redact_keys(record.exc_text)
+        record.msg, record.args = redact_keys(record.getMessage()), ()
+        return True
+
+logger.addFilter(RedactKeys())
 
 # Shown when a file fails for a reason we did not anticipate; the details go to the log
 GENERIC_FAILURE = "The file may be damaged, password-protected, or in an unexpected format. Details were logged."
