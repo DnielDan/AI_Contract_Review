@@ -48,7 +48,22 @@ export const getConfig = () => request<ServerConfig>('/api/config')
 export const scanSubcontract = (file: File) =>
   request<SubcontractScan>('/api/subcontract-scans', upload(file))
 
-// The server sends the annotated copy as an attachment, so the browser saves it and stays on the page
-export function downloadScan(id: string) {
-  window.location.assign(`${scanPath(id)}/download`)
+// Fetches the annotated copy and has the browser save it. Fetching it first, rather than opening the
+// download link, means a failure (for example a scan the server no longer keeps) throws an ApiError the
+// workbench can show, instead of the browser leaving the workbench for an error page and losing the session.
+export async function downloadScan(id: string, fallbackName: string) {
+  const response = await fetch(`${scanPath(id)}/download`)
+  if (!response.ok) throw new ApiError(response.status, await errorMessage(response))
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = attachmentName(response) ?? fallbackName
+  link.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+// The filename the server gives the annotated copy (main.download_scan), or null
+function attachmentName(response: Response) {
+  const match = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') ?? '')
+  return match ? match[1] : null
 }

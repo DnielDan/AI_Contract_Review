@@ -1,12 +1,12 @@
 import { useEffect, useReducer, useRef } from 'react'
-import { deleteScan, errorText, getConfig, startScan } from './api'
+import { deleteScan, downloadScan, errorText, getConfig, startScan } from './api'
 import { DocViewer } from './DocViewer'
 import { allFlags } from './flags'
 import { FlagsPanel } from './FlagsPanel'
 import { Header } from './Header'
 import { usePolling } from './polling'
+import { Notice } from './Notice'
 import { Rail } from './Rail'
-import { SetupStrip } from './SetupStrip'
 import { initialState, reducer, type FlagSource } from './state'
 import type { Flag } from './types'
 
@@ -46,18 +46,35 @@ export function App() {
     dispatch({ type: 'cancelled', id })
   }
 
+  // Removes a finished scan from the list and from the server, which then forgets its results and annotated
+  // copy. If the server already forgot it (it expired, or the server restarted), it is removed from the list anyway.
+  async function removeScan(id: string) {
+    await deleteScan(id).catch(() => null)
+    dispatch({ type: 'removed', id })
+  }
+
+  async function download(id: string, filename: string) {
+    try {
+      await downloadScan(id, `${filename.replace(/\.[^.]+$/, '')}_scanned.docx`)
+      dispatch({ type: 'download', id, error: null })
+    } catch (error) {
+      dispatch({ type: 'download', id, error: errorText(error) })
+    }
+  }
+
   const selectFlag = (source: FlagSource) => (flag: Flag) => dispatch({ type: 'selectFlag', flag, source })
 
   return (
     <div className="app">
       <Header />
-      {state.aiSetupProblem && <SetupStrip problem={state.aiSetupProblem} />}
+      {state.aiSetupProblem && <Notice id="setup" message={state.aiSetupProblem} />}
       <div className={state.panelCollapsed ? 'frame collapsed' : 'frame'} id="frame">
         <Rail
           scans={state.scans}
           selectedScanId={state.selectedScanId}
           onFiles={scanFiles}
           onSelect={(id) => dispatch({ type: 'selectScan', id })}
+          onRemove={removeScan}
         />
         <DocViewer
           key={scan?.id ?? 'none'}
@@ -69,6 +86,8 @@ export function App() {
           onZoom={(zoom) => dispatch({ type: 'zoom', zoom })}
           onMarkClick={selectFlag('mark')}
           onCancel={cancelScan}
+          onDownload={download}
+          onDismissDownloadError={(id) => dispatch({ type: 'download', id, error: null })}
         />
         <FlagsPanel
           flags={flags}

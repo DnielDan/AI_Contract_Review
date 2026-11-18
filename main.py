@@ -71,6 +71,22 @@ def check_matrices(far_path=None, tnc_path=None):
     if not any(sheet.get("Common Problems") for sheet in tnc.values()):
         raise ConfigError(f"The Ts&Cs Matrix at {tnc_path} has no sheets with a 'Common Problems' section")
 
+# How long a finished scan (its results and annotated copy, kept in memory) stays available, from
+# AICR_SCAN_RETENTION_MINUTES; default 120. Checked at startup like the matrices.
+DEFAULT_SCAN_RETENTION_MINUTES = 120
+
+def scan_retention_seconds():
+    value = os.environ.get("AICR_SCAN_RETENTION_MINUTES", "").strip()
+    if not value:
+        return DEFAULT_SCAN_RETENTION_MINUTES * 60
+    try:
+        minutes = float(value)
+    except ValueError:
+        minutes = 0
+    if not minutes > 0:
+        raise ConfigError(f"AICR_SCAN_RETENTION_MINUTES must be a number of minutes greater than 0, not '{value}'")
+    return minutes * 60
+
 # Where the server listens, set with environment variables (see README):
 #   AICR_HOST      address to listen on; defaults to 127.0.0.1 so uploads are not exposed on the network
 #   AICR_PORT      port to listen on; defaults to 8080
@@ -228,9 +244,12 @@ class Scan:
         end = self.finished_at if self.finished_at is not None else time.monotonic()
         return round(end - self.started_at, 1)
 
-# Every scan of this server session, by id; a restart forgets them
+# Every scan of this server session, by id; a restart forgets them. A finished scan is forgotten after
+# scan_retention_seconds(), and only the newest MAX_FINISHED_SCANS finished scans are kept, so contract
+# text and annotated copies do not pile up in memory. Running and queued scans are never forgotten.
 _scans = {}
 _scans_lock = threading.Lock()
+MAX_FINISHED_SCANS = 50
 # Held by the contract scan that is running; the others wait for it
 _scan_turn = threading.Lock()
 QUEUE_CHECK_SECONDS = 0.2  # how often a waiting scan checks whether it was cancelled
@@ -308,9 +327,24 @@ def _read_upload(file, extensions, wrong_type_message):
         raise HTTPException(413, "The file is larger than 25 MB.")
     return upload
 
-NO_SUCH_SCAN = "No scan with this id. It may have been deleted, or the server restarted."
+NO_SUCH_SCAN = ("No scan with this id. It may have been removed or expired (finished scans are kept for "
+                "a limited time), or the server restarted. Scan the contract again.")
+
+# Forgets finished scans that are past the retention time, and the oldest finished scans beyond
+# MAX_FINISHED_SCANS. Runs on each API request, so nothing needs to run in the background.
+def forget_old_scans(now=None):
+    now = time.monotonic() if now is None else now
+    retention = scan_retention_seconds()
+    with _scans_lock:
+        finished = sorted((scan for scan in _scans.values() if scan.finished_at is not None),
+                          key=lambda scan: scan.finished_at)
+        old = {scan.id for scan in finished if now - scan.finished_at > retention}
+        old.update(scan.id for scan in finished[:max(0, len(finished) - MAX_FINISHED_SCANS)])
+        for scan_id in old:
+            del _scans[scan_id]
 
 def _get_scan(scan_id):
+    forget_old_scans()
     with _scans_lock:
         scan = _scans.get(scan_id)
     if scan is None:
@@ -332,6 +366,7 @@ def start_scan(file: UploadFile):
     upload = _read_upload(file, ACCEPTED_EXTENSIONS, "Only .docx, .doc, or .pdf files can be scanned.")
     scan = Scan(id=secrets.token_urlsafe(16), filename=file.filename,
                 docx_name=f"{getFilenameStringNoExtension(safe_filename(file.filename))}_scanned.docx")
+    forget_old_scans()
     with _scans_lock:
         _scans[scan.id] = scan
     # A daemon thread does not hold up stopping the server; a working directory it leaves is removed on the next start
@@ -362,7 +397,8 @@ def download_scan(scan_id: str):
                     media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     headers={"Content-Disposition": f'attachment; filename="{scan.docx_name}"'})
 
-# Forgets a scan; a scan still running stops at its next step
+# Forgets a scan: cancels one that is running or queued (it stops at its next step), or removes a finished
+# one with its results and annotated copy
 @app.delete("/api/scans/{scan_id}", status_code=204)
 def delete_scan(scan_id: str):
     with _scans_lock:
@@ -414,6 +450,7 @@ else:
 if __name__ == "__main__":
     try:
         check_matrices()
+        scan_retention_seconds()
     except ConfigError as error:
         raise SystemExit(f"Configuration error: {error}")
     # The server still starts, so reviewers see why scans are turned down instead of a dead page

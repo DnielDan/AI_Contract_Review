@@ -18,6 +18,7 @@ export interface ScanEntry {
   elapsedSeconds: number
   error: string | null
   results: ScanResults | null
+  downloadError: string | null // why the last download of the annotated copy failed, until dismissed
 }
 
 export interface State {
@@ -39,6 +40,8 @@ export type Action =
   | { type: 'results'; id: string; results: ScanResults }
   | { type: 'lost'; id: string; error: string }
   | { type: 'cancelled'; id: string }
+  | { type: 'removed'; id: string }
+  | { type: 'download'; id: string; error: string | null }
   | { type: 'selectScan'; id: string }
   | { type: 'selectFlag'; flag: Flag; source: FlagSource }
   | { type: 'filter'; filter: Filter }
@@ -60,7 +63,7 @@ export const initialState: State = {
 
 // Adds a scan the server has just accepted or turned down
 function addScan(state: State, id: string, filename: string, stage: Stage, error: string | null = null): State {
-  const scan: ScanEntry = { id, filename, stage, error, elapsedSeconds: 0, results: null }
+  const scan: ScanEntry = { id, filename, stage, error, elapsedSeconds: 0, results: null, downloadError: null }
   return { ...state, scans: [...state.scans, scan] }
 }
 
@@ -97,6 +100,12 @@ export function reducer(state: State, action: Action): State {
       const cancelled = updateScan(state, action.id, () => ({ stage: 'cancelled' }))
       return state.selectedScanId === action.id ? selectScan(cancelled, null) : cancelled
     }
+    case 'removed': {
+      const remaining = { ...state, scans: state.scans.filter((scan) => scan.id !== action.id) }
+      return state.selectedScanId === action.id ? selectScan(remaining, null) : remaining
+    }
+    case 'download':
+      return updateScan(state, action.id, () => ({ downloadError: action.error }))
     case 'selectScan':
       return selectScan(state, action.id)
     case 'selectFlag': {

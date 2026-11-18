@@ -196,6 +196,45 @@ def test_scan_waiting_for_its_turn_stays_queued_and_can_be_cancelled(client, pau
     assert len(os.listdir(tmp_path)) == 1  # only the running scan's working directory; the queued one wrote nothing
 
 
+def stored_scan(scan_id, finished_seconds_ago=None):
+    """Puts a scan straight into the server's list: finished that long ago, or still running when None."""
+    now = time.monotonic()
+    scan = main.Scan(id=scan_id, filename=f"{scan_id}.docx", docx_name=f"{scan_id}_scanned.docx",
+                     stage="done" if finished_seconds_ago is not None else "review", started_at=now - 7200,
+                     finished_at=None if finished_seconds_ago is None else now - finished_seconds_ago)
+    main._scans[scan_id] = scan
+    return scan
+
+
+def test_finished_scans_are_forgotten_after_the_retention_time(client, monkeypatch):
+    monkeypatch.setenv("AICR_SCAN_RETENTION_MINUTES", "1")
+    stored_scan("old", finished_seconds_ago=61)
+    stored_scan("recent", finished_seconds_ago=30)
+    stored_scan("running")  # started two hours ago, but running scans are never forgotten
+    assert client.get("/api/scans/old").status_code == 404
+    assert "expired" in client.get("/api/scans/old/download").json()["detail"]
+    assert client.get("/api/scans/recent").status_code == 200
+    assert client.get("/api/scans/running").json()["stage"] == "review"
+
+
+def test_only_the_newest_finished_scans_are_kept(client, monkeypatch):
+    monkeypatch.setattr(main, "MAX_FINISHED_SCANS", 2)
+    for scan_id, seconds_ago in (("first", 30), ("second", 20), ("third", 10)):
+        stored_scan(scan_id, finished_seconds_ago=seconds_ago)
+    stored_scan("running")
+    main.forget_old_scans()
+    assert sorted(main._scans) == ["running", "second", "third"]
+
+
+def test_delete_removes_a_finished_scan_and_its_annotated_copy(client, fake_scan, wait_for_scan):
+    fake_scan(flagged=1)
+    scan_id = client.post("/api/scans", files={"file": ("contract.docx", b"contract")}).json()["id"]
+    assert wait_for_scan(client, scan_id)["stage"] == "done"
+    assert client.delete(f"/api/scans/{scan_id}").status_code == 204
+    assert client.get(f"/api/scans/{scan_id}/download").status_code == 404
+    assert main._scans == {}
+
+
 def test_config_says_why_the_ai_review_is_not_set_up(client, monkeypatch):
     monkeypatch.delenv("LLM_PROVIDER")
     config = client.get("/api/config").json()

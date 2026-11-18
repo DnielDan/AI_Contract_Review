@@ -32,7 +32,7 @@ cd ..
 python main.py
 ```
 
-This serves the workbench at http://127.0.0.1:8080. Scanning needs an AI provider set up in `.env` (see "Settings and AI review"); until then the workbench shows a yellow "AI review is not set up" banner and turns down uploads. Drop a contract on the left to scan it; the progress card shows each step. When the scan finishes, the contract is shown with its flagged passages and FAR clauses highlighted, each flag has a card on the right with the matrix guidance, and the download button saves the annotated `<name>_scanned.docx`. Scans are kept in memory for the session only, and an uploaded file is deleted from the server as soon as its scan ends. The subcontractor audit check has no screen yet; it is available to programs as `POST /api/subcontract-scans`.
+This serves the workbench at http://127.0.0.1:8080. Scanning needs an AI provider set up in `.env` (see "Settings and AI review"); until then the workbench shows a yellow "AI review is not set up" banner and turns down uploads. Drop a contract on the left to scan it; the progress card shows each step. When the scan finishes, the contract is shown with its flagged passages and FAR clauses highlighted, each flag has a card on the right with the matrix guidance, and the download button saves the annotated `<name>_scanned.docx`. An uploaded file is deleted from the server as soon as its scan ends. A finished scan's results and annotated copy are kept in memory only, for 2 hours (`AICR_SCAN_RETENTION_MINUTES`) and at most 50 finished scans; the × next to a scan in the list removes it sooner, and a server restart forgets them all. Download the annotated copy before then: once a scan has been forgotten, the download button says so and the contract has to be scanned again. The subcontractor audit check has no screen yet; it is available to programs as `POST /api/subcontract-scans`.
 
 Launch options are set with environment variables:
 
@@ -40,6 +40,7 @@ Launch options are set with environment variables:
 |---|---|---|
 | `AICR_HOST` | `127.0.0.1` | Address to listen on. `0.0.0.0` lets anyone on the network use the app; the app has no login yet (planned in US-8), so keep the default outside a controlled pilot. |
 | `AICR_PORT` | `8080` | Port to listen on. |
+| `AICR_SCAN_RETENTION_MINUTES` | `120` | How long a finished scan's results and annotated copy stay available in memory. Also settable in `.env`. |
 
 **Working on the workbench:** with `python main.py` running on port 8080, run `npm run dev` in `frontend/`. Vite serves the workbench on its own port, reloads it on every change, and passes `/api` calls to the Python server.
 

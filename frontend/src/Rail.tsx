@@ -9,9 +9,10 @@ interface Props {
   selectedScanId: string | null
   onFiles: (files: File[]) => void
   onSelect: (id: string) => void
+  onRemove: (id: string) => void
 }
 
-export function Rail({ scans, selectedScanId, onFiles, onSelect }: Props) {
+export function Rail({ scans, selectedScanId, onFiles, onSelect, onRemove }: Props) {
   const input = useRef<HTMLInputElement>(null)
   const openPicker = () => input.current?.click()
 
@@ -25,7 +26,7 @@ export function Rail({ scans, selectedScanId, onFiles, onSelect }: Props) {
       <DropZone onClick={openPicker} onFiles={onFiles} />
       <input ref={input} type="file" id="file-input" accept=".docx,.doc,.pdf" hidden onChange={onPicked} />
       <NewScan onClick={openPicker} />
-      <ScanList scans={scans} selectedScanId={selectedScanId} onSelect={onSelect} />
+      <ScanList scans={scans} selectedScanId={selectedScanId} onSelect={onSelect} onRemove={onRemove} />
     </aside>
   )
 }
