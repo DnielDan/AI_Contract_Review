@@ -6,6 +6,7 @@ import { FlagsPanel } from './FlagsPanel'
 import { Header } from './Header'
 import { usePolling } from './polling'
 import { Rail } from './Rail'
+import { SetupStrip } from './SetupStrip'
 import { initialState, reducer, type FlagSource } from './state'
 import type { Flag } from './types'
 
@@ -15,11 +16,11 @@ export function App() {
   const rejectedUploads = useRef(0)
   usePolling(state.scans, dispatch)
 
-  // So a new scan's progress names the right review from the start ("AI review" or "Match").
+  // So the reviewer knows before uploading when the AI review is not set up and scans will be turned down.
   // If the server cannot be reached, scans say so when they start.
   useEffect(() => {
     getConfig()
-      .then((config) => dispatch({ type: 'config', reviewMethod: config.review_method }))
+      .then((config) => dispatch({ type: 'config', aiSetupProblem: config.ai_ready ? null : config.problem }))
       .catch(() => null)
   }, [])
 
@@ -50,6 +51,7 @@ export function App() {
   return (
     <div className="app">
       <Header />
+      {state.aiSetupProblem && <SetupStrip problem={state.aiSetupProblem} />}
       <div className={state.panelCollapsed ? 'frame collapsed' : 'frame'} id="frame">
         <Rail
           scans={state.scans}
@@ -67,7 +69,6 @@ export function App() {
           onZoom={(zoom) => dispatch({ type: 'zoom', zoom })}
           onMarkClick={selectFlag('mark')}
           onCancel={cancelScan}
-          onDismissNotice={(id) => dispatch({ type: 'dismissNotice', id })}
         />
         <FlagsPanel
           flags={flags}

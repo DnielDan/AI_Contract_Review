@@ -1,5 +1,5 @@
-"""US-19: the API the workbench uses. One real scan of a sample contract with the basic matcher (no LLM);
-the other tests replace the pipeline with a quick stand-in.
+"""US-19: the API the workbench uses. One real scan of a sample contract, with a stand-in for the AI
+review (fakes.py); the other tests replace the pipeline with a quick stand-in.
 
 There are no 401 or cross-user scoping tests on purpose: the app has no login yet (US-22, US-8), so
 every scan is open to anyone who can reach the server. Add both for every endpoint when login lands."""
@@ -12,10 +12,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import main
+from fakes import FAKE_MODEL, FAKE_PROVIDER, fake_review_contract, fake_settings
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "..", "supplementary_files", "samples_test_set")
 SAMPLE_DOCX = "0078-23 Adhikari - agreement.docx"
-STATUS_FIELDS = {"id", "filename", "stage", "review_method", "elapsed_seconds", "flagged_count", "ai_notice", "error"}
+STATUS_FIELDS = {"id", "filename", "stage", "elapsed_seconds", "flagged_count", "error"}
 
 
 def eventually(condition, timeout=10):
@@ -27,10 +28,12 @@ def eventually(condition, timeout=10):
 
 @pytest.fixture(scope="module")
 def sample_scan(tmp_path_factory, wait_for_scan):
-    """A real scan of a sample agreement (about 30 seconds), shared by the tests that read its results."""
+    """A real scan of a sample agreement, with the stand-in AI review, shared by the tests that read its results."""
     temp_dir = tmp_path_factory.mktemp("scans")
     with pytest.MonkeyPatch.context() as patch:
-        patch.delenv("LLM_PROVIDER", raising=False)  # so provider_name() is None: the matcher, never an LLM
+        for name, value in fake_settings().items():
+            patch.setenv(name, value)
+        patch.setattr(main, "review_contract", fake_review_contract)  # never a real provider
         patch.setattr(main, "TEMP_DIR", str(temp_dir))
         client = TestClient(main.app)
         with open(os.path.join(SAMPLES, SAMPLE_DOCX), "rb") as file:
@@ -50,8 +53,7 @@ def paused_pipeline(monkeypatch):
         on_stage("annotate")
         with open(output, "wb") as file:
             file.write(b"annotated")
-        return {"paragraphs": ["Text."], "flags": [], "far": [], "review_label": "", "review_method": "matcher",
-                "ai_notice": None}
+        return {"paragraphs": ["Text."], "flags": [], "far": [], "review_label": ""}
     monkeypatch.setattr(main, "scan_contract_with_results", scan)
     yield release
     release.set()
@@ -71,8 +73,9 @@ def test_scan_of_a_real_contract_returns_paragraphs_and_language_flags(sample_sc
     assert any(flag["kind"] == "language" and flag["category"] for flag in results["flags"])
     assert all(flag["paragraph"] is None or flag["paragraph"] < len(results["paragraphs"])
                for flag in results["flags"] + results["far"])
-    assert (status["flagged_count"], status["review_method"]) == (len(results["flags"]), "matcher")
-    assert (results["review_method"], results["ai_notice"]) == ("matcher", None)
+    assert status["flagged_count"] == len(results["flags"])
+    assert results["review_label"] == f"AI review ({FAKE_PROVIDER}, {FAKE_MODEL})"
+    assert any(flag["ai_justification"] == "Stand-in AI justification." for flag in results["flags"])
 
 
 def test_download_is_the_annotated_docx_and_nothing_is_left_on_disk(sample_scan):
@@ -109,34 +112,33 @@ def test_upload_is_rejected_before_a_scan_starts(client, monkeypatch, tmp_path, 
 def test_status_reports_the_stage_while_the_scan_runs(client, paused_pipeline):
     status = client.get(f"/api/scans/{start_paused_scan(client)}").json()
     assert set(status) == STATUS_FIELDS
-    assert (status["filename"], status["stage"], status["review_method"]) == ("contract.pdf", "extract", "matcher")
+    assert (status["filename"], status["stage"]) == ("contract.pdf", "extract")
     assert status["elapsed_seconds"] >= 0 and status["error"] is None
 
 
-def test_status_reports_fallback_before_the_scan_finishes(client, monkeypatch, wait_for_scan):
-    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
-
+def test_failed_ai_review_fails_the_scan_with_the_reason(client, monkeypatch, wait_for_scan, tmp_path):
     def failing_call(*args):
-        raise RuntimeError("no reply")
+        raise RuntimeError("rate limited")
     monkeypatch.setattr(main, "review_contract", failing_call)
-    monkeypatch.setattr(main, "flag_sentences", lambda *args: {})  # the real matcher takes about 30 seconds here
-    release = threading.Event()
-    annotate = main.annotate_contract
-
-    def paused_annotate(*args):
-        release.wait(10)
-        annotate(*args)
-    monkeypatch.setattr(main, "annotate_contract", paused_annotate)
     with open(os.path.join(SAMPLES, SAMPLE_DOCX), "rb") as file:
         scan_id = client.post("/api/scans", files={"file": (SAMPLE_DOCX, file.read())}).json()["id"]
-    try:
-        eventually(lambda: client.get(f"/api/scans/{scan_id}").json()["stage"] == "annotate")
-        status = client.get(f"/api/scans/{scan_id}").json()
-        assert status["review_method"] == "matcher"
-        assert status["ai_notice"].startswith("AI review unavailable")
-    finally:
-        release.set()
-    assert wait_for_scan(client, scan_id, timeout=30)["stage"] == "done"
+    status = wait_for_scan(client, scan_id, timeout=60)
+    # No fallback to the matcher: the reviewer is told the AI review failed and gets no results
+    assert status["stage"] == "failed"
+    assert status["error"].startswith(f"Could not review {SAMPLE_DOCX}.")
+    assert f"AI service ({FAKE_PROVIDER}) did not return a usable result" in status["error"]
+    assert client.get(f"/api/scans/{scan_id}/results").status_code == 409
+    assert os.listdir(tmp_path) == []
+
+
+@pytest.mark.parametrize("unset", ["LLM_PROVIDER", "GEMINI_API_KEY"])
+def test_upload_is_turned_down_while_the_ai_review_is_not_set_up(client, monkeypatch, tmp_path, unset):
+    monkeypatch.delenv(unset)
+    response = client.post("/api/scans", files={"file": ("contract.docx", b"contract")})
+    assert response.status_code == 503
+    assert response.json()["detail"].startswith(main.AI_NOT_SET_UP)
+    assert unset in response.json()["detail"]
+    assert main._scans == {} and os.listdir(tmp_path) == []
 
 
 def test_results_and_download_wait_until_the_scan_is_done(client, wait_for_scan, paused_pipeline):
@@ -160,14 +162,17 @@ def test_delete_cancels_a_running_scan_and_forgets_it(client, paused_pipeline, t
     assert client.delete(f"/api/scans/{scan_id}").status_code == 404
 
 
-def test_config_reports_the_matcher_without_an_llm(client):
-    assert client.get("/api/config").json() == {"review_method": "matcher", "provider": None, "model": None}
+def test_config_says_why_the_ai_review_is_not_set_up(client, monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER")
+    config = client.get("/api/config").json()
+    assert (config["ai_ready"], config["provider"], config["model"]) == (False, None, None)
+    assert config["problem"] == f"{main.AI_NOT_SET_UP} (LLM_PROVIDER is not set in .env)"
 
 
-def test_config_names_the_llm_when_one_is_configured(client, monkeypatch):
-    monkeypatch.setenv("LLM_PROVIDER", "gemini")
-    monkeypatch.delenv("LLM_MODEL", raising=False)
-    assert client.get("/api/config").json() == {"review_method": "llm", "provider": "gemini", "model": "gemini-2.5-flash"}
+def test_config_names_the_provider_and_model_when_set_up(client, monkeypatch):
+    monkeypatch.delenv("LLM_MODEL")
+    assert client.get("/api/config").json() == {
+        "ai_ready": True, "problem": None, "provider": "gemini", "model": "gemini-2.5-flash"}
 
 
 def test_subcontract_scan_returns_whether_findings_were_flagged(client, tmp_path):

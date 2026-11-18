@@ -50,6 +50,23 @@ def model_name():
     return None
 
 
+# Returns why the AI review cannot run with the current settings (no provider, unknown provider, or
+# missing key), or None when it can. Checks the settings only; it does not call the provider.
+def configuration_problem():
+    provider = provider_name()
+    if provider is None:
+        return "LLM_PROVIDER is not set in .env"
+    if provider == "anthropic":
+        key_env = "ANTHROPIC_API_KEY"
+    elif provider in _OPENAI_COMPATIBLE_PRESETS:
+        key_env = _OPENAI_COMPATIBLE_PRESETS[provider]["key_env"]
+    else:
+        return f"Unknown LLM_PROVIDER '{provider}'. Expected one of: {', '.join(PROVIDERS)}"
+    if not os.environ.get(key_env):
+        return f"{key_env} is not set in .env (needed for LLM_PROVIDER={provider})"
+    return None
+
+
 # Pulls a JSON object out of a plain-text reply, tolerating ```json fences or a sentence around it
 def _parse_json_text(text):
     text = (text or "").strip()
@@ -136,16 +153,15 @@ def _anthropic(prompt, schema, schema_name):
 # `schema`. Retries when the model returns malformed JSON; configuration problems (missing key,
 # unknown provider) are raised immediately with a readable message.
 def generate_structured(prompt, schema, schema_name):
-    provider = provider_name()
-    if provider is None:
-        raise LLMConfigError("LLM_PROVIDER is not set in .env")
+    problem = configuration_problem()
+    if problem:
+        raise LLMConfigError(problem)
 
+    provider = provider_name()
     if provider == "anthropic":
         call = lambda: _anthropic(prompt, schema, schema_name)
-    elif provider in _OPENAI_COMPATIBLE_PRESETS:
-        call = lambda: _openai_compatible(provider, prompt, schema, schema_name)
     else:
-        raise LLMConfigError(f"Unknown LLM_PROVIDER '{provider}'. Expected one of: {', '.join(PROVIDERS)}")
+        call = lambda: _openai_compatible(provider, prompt, schema, schema_name)
 
     last_error = None
     for _ in range(MAX_JSON_RETRIES):

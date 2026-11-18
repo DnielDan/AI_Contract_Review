@@ -9,7 +9,8 @@ signature and register it in SCANNERS.
 import os
 
 import main  # noqa: F401  (sets up the bundled NLTK data path and the matrix paths)
-from flag_problem_language import flag_sentences, load_tnc_matrix
+from evaluation.tfidf_matcher import flag_sentences
+from flag_problem_language import load_tnc_matrix
 from llm_review import review_contract
 
 _tnc_matrix = None

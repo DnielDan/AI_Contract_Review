@@ -1,7 +1,6 @@
 // The shapes the Python server returns (main.py and scan_results.py)
 
 export type Stage = 'queued' | 'extract' | 'review' | 'annotate' | 'done' | 'failed' | 'cancelled'
-export type ReviewMethod = 'llm' | 'matcher'
 export type FarStatus = 'OK' | 'C' | 'REMOVE'
 
 export interface ScanStarted {
@@ -14,10 +13,8 @@ export interface ScanStatus {
   id: string
   filename: string
   stage: Stage
-  review_method: ReviewMethod
   elapsed_seconds: number
   flagged_count: number
-  ai_notice: string | null
   error: string | null
 }
 
@@ -53,12 +50,12 @@ export interface ScanResults {
   flags: LanguageFlag[]
   far: FarFlag[]
   review_label: string
-  review_method: ReviewMethod
-  ai_notice: string | null
 }
 
+// Whether the AI review is set up; while it is not, the server turns down uploads and `problem` says why
 export interface ServerConfig {
-  review_method: ReviewMethod
+  ai_ready: boolean
+  problem: string | null
   provider: string | null
   model: string | null
 }

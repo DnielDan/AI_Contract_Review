@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { downloadScan } from './api'
-import { FallbackStrip } from './FallbackStrip'
 import { paginate } from './pages'
 import { ProgressCard } from './ProgressCard'
 import { Sheets } from './Sheets'
@@ -18,7 +17,6 @@ interface Props {
   onZoom: (zoom: number) => void
   onMarkClick: (flag: Flag) => void
   onCancel: (id: string) => void
-  onDismissNotice: (id: string) => void
 }
 
 function sheetsIn(well: HTMLElement | null) {
@@ -44,7 +42,7 @@ function WellContent({ scan, results, pages, selectedFlagId, onMarkClick, onCanc
 
 // The document column. App gives it a new key for each scan, so the page and scroll position start fresh.
 export function DocViewer(props: Props) {
-  const { scan, zoom, selectedFlagId, flagSource, flagFocus, onZoom, onMarkClick, onCancel, onDismissNotice } = props
+  const { scan, zoom, selectedFlagId, flagSource, flagFocus, onZoom, onMarkClick, onCancel } = props
   const results = scan?.stage === 'done' ? scan.results : null
   const pages = useMemo(() => (results ? paginate(results.paragraphs) : []), [results])
   const [page, setPage] = useState(0)
@@ -90,7 +88,6 @@ export function DocViewer(props: Props) {
     showPage(target)
   }
 
-  const notice = results && scan?.aiNotice && !scan.noticeDismissed ? scan.aiNotice : null
   return (
     <main className="doc">
       <Toolbar
@@ -103,7 +100,6 @@ export function DocViewer(props: Props) {
         onZoom={onZoom}
         onDownload={() => scan && downloadScan(scan.id)}
       />
-      {scan && notice && <FallbackStrip notice={notice} onDismiss={() => onDismissNotice(scan.id)} />}
       <div className="well" id="well" data-zoom={ZOOMS[zoom].id} ref={well}>
         <WellContent
           scan={scan}

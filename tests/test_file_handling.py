@@ -56,7 +56,7 @@ def test_stale_work_dirs_are_removed_but_other_files_are_kept(monkeypatch, tmp_p
     assert os.listdir(tmp_path) == [".gitkeep"]
 
 
-def test_concurrent_scans_do_not_mix_up_contracts(tmp_path):
+def test_concurrent_scans_do_not_mix_up_contracts(tmp_path, fake_ai):
     # Before US-2 every scan wrote to the same contract_to_txt.txt, so overlapping scans could
     # return one contract's text inside another contract's results
     jobs = {
@@ -68,7 +68,7 @@ def test_concurrent_scans_do_not_mix_up_contracts(tmp_path):
         (tmp_path / key).mkdir()
         outputs[key] = tmp_path / key / "scanned.docx"
     with ThreadPoolExecutor(max_workers=2) as pool:
-        futures = [pool.submit(main.scan_file, os.path.join(SAMPLES, sample), str(outputs[key]))
+        futures = [pool.submit(main.scan_contract_with_results, os.path.join(SAMPLES, sample), str(outputs[key]))
                    for key, (sample, _) in jobs.items()]
         for future in futures:
             future.result()

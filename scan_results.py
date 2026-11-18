@@ -8,13 +8,6 @@ import math
 
 from flag_FAR_clauses import _clause_pattern, _note_value, flag_clauses, read_far_matrix
 from flag_problem_language import _normalize, _paragraph_for
-from llm_providers import provider_name
-
-
-# "llm" when the AI review produced the flags, "matcher" when the TF-IDF matcher did
-# (no LLM configured, or the AI review failed and the scan fell back to the matcher)
-def review_method(ai_notice=None):
-    return "llm" if provider_name() and ai_notice is None else "matcher"
 
 
 # Finds the FAR clauses in the contract text the same way annotate_contract does, and the FAR Matrix
@@ -26,15 +19,13 @@ def far_matches(contract_text, far_matrix_path):
     return clauses, rows
 
 
-def build_results(contract_text, flags, far_clauses, far_rows, review_label, ai_notice):
+def build_results(contract_text, flags, far_clauses, far_rows, review_label):
     paragraphs = [paragraph.strip() for paragraph in contract_text.split("\n") if paragraph.strip()]
     return {
         "paragraphs": paragraphs,
         "flags": _language_flags(flags, paragraphs),
         "far": _far_flags(far_clauses, far_rows, paragraphs),
         "review_label": review_label,
-        "review_method": review_method(ai_notice),
-        "ai_notice": ai_notice,
     }
 
 
@@ -47,8 +38,8 @@ def _language_flags(flags, paragraphs):
             for number, (paragraph, text, details) in enumerate(placed, 1)]
 
 
-# Maps the details of a flag to the fields the workbench shows. The matcher and the AI review use the
-# same detail names (see flag_sentences and llm_review._issue_details); a missing one becomes None.
+# Maps the details of a flag (llm_review._issue_details) to the fields the workbench shows; a missing one
+# becomes None. A numeric confidence is still accepted, as the old TF-IDF matcher's similarity score was.
 def _language_flag(flag_id, paragraph, text, details):
     return {
         "id": flag_id,

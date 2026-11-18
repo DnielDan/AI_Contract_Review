@@ -15,12 +15,11 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from contract_to_txt import UnsupportedFileError, convert_to_txt, txt_to_docx
 from flag_FAR_clauses import annotate_contract
-from flag_problem_language import (DEFAULT_SIMILARITY_THRESHOLD, _flag_problem_language, flag_sentences,
-                                   load_tnc_matrix, write_flagged_text)
+from flag_problem_language import load_tnc_matrix, write_flagged_text
 from flag_FAR_clauses import read_far_matrix
-from llm_providers import LLMConfigError, model_name, provider_name
-from llm_review import _issue_details, llm_flag_problem_language, review_contract
-from scan_results import build_results, far_matches, review_method
+from llm_providers import LLMConfigError, configuration_problem, model_name, provider_name
+from llm_review import _issue_details, review_contract
+from scan_results import build_results, far_matches
 from dotenv import load_dotenv
 from nltk import data as nltk
 import pdf_to_txt
@@ -48,22 +47,9 @@ def _configured_path(variable, default):
     value = os.environ.get(variable, "").strip()
     return os.path.join(BASE_DIR, value) if value else default
 
-def _configured_threshold():
-    value = os.environ.get("AICR_SIMILARITY_THRESHOLD", "").strip()
-    if not value:
-        return DEFAULT_SIMILARITY_THRESHOLD
-    try:
-        threshold = float(value)
-    except ValueError:
-        raise ConfigError(f"AICR_SIMILARITY_THRESHOLD must be a number between 0 and 1, not '{value}'") from None
-    if not 0 < threshold < 1:
-        raise ConfigError(f"AICR_SIMILARITY_THRESHOLD must be between 0 and 1, not {threshold}")
-    return threshold
-
-# Matrices and matcher threshold (US-7); the bundled matrices are the defaults
+# Matrices (US-7); the bundled matrices are the defaults
 FAR_CLAUSE_MATRIX_PATH = _configured_path("AICR_FAR_MATRIX", os.path.join(SUPPLEMENTARY_DIR, "2023-03-20_FAR Matrix.xls"))
 TNC_MATRIX_PATH = _configured_path("AICR_TNC_MATRIX", os.path.join(SUPPLEMENTARY_DIR, "Contract Ts&Cs Matrix.xlsm"))
-SIMILARITY_THRESHOLD = _configured_threshold()
 
 # Checks that both matrices exist and have the columns the scanner reads, so a wrong path or a
 # revised layout is reported when the app starts rather than as a failed scan
@@ -94,87 +80,54 @@ logger = logging.getLogger("aicr")
 # Shown when a file fails for a reason we did not anticipate; the details go to the log
 GENERIC_FAILURE = "The file may be damaged, password-protected, or in an unexpected format. Details were logged."
 
+# Shown to reviewers while no approved AI provider and key are set up (see docs/AI_REVIEW.md)
+AI_NOT_SET_UP = ("AI review is not set up on this server yet, so contracts cannot be scanned. "
+                 "Ask IT to finish the setup in docs/AI_REVIEW.md.")
+
+# The AI review could not produce flags; the message is shown to the reviewer as is, the cause is logged
+class AIReviewError(RuntimeError):
+    pass
+
 # Returns the message to show the user when a file could not be processed, and logs the error
 def failure_message(name, error):
     if isinstance(error, UnsupportedFileError):
         logger.warning("Could not process %s: %s", name, error)
         return f"Could not process {name}. {error}"
+    if isinstance(error, AIReviewError):
+        logger.error("AI review of %s failed", name, exc_info=error)
+        return f"Could not review {name}. {error}"
     logger.exception("Could not process %s", name, exc_info=error)
     return f"Could not process {name}. {GENERIC_FAILURE}"
 
-# Scans a contract and writes the annotated copy; returns the number of passages flagged.
-def scan_file(filepath, output_filepath):
-    return scan_contract(filepath, output_filepath)[0]
+# Returns the reviewer-facing reason the AI review cannot run, or None when a provider and its key are set
+def ai_setup_problem():
+    problem = configuration_problem()
+    return f"{AI_NOT_SET_UP} ({problem})" if problem else None
 
-# Scans a contract and writes the annotated copy. Returns the number of passages flagged and a
-# notice for the reviewer when the AI review was configured but could not run (otherwise None).
-# Intermediate files go in the same directory as output_filepath, so concurrent scans never share files.
-def scan_contract(filepath, output_filepath):
-    work_dir = os.path.dirname(os.path.abspath(output_filepath))
-    contract_txt = os.path.join(work_dir, 'contract_to_txt.txt')
-    flagged_txt = os.path.join(work_dir, 'flagged_contract_to_txt.txt')
-    file_to_highlight = os.path.join(work_dir, 'flagged_contract_to_docx.docx')
+# Says in the scanned document which AI provider and model flagged the language
+def review_label():
+    return f"AI review ({provider_name()}, {model_name()})"
 
-    # clean docx and annotate it
-    convert_to_txt(filepath, contract_txt)
-    flagged_count, ai_notice = flag_problem_language(contract_txt, flagged_txt)
-    txt_to_docx(flagged_txt, file_to_highlight)
-
-    annotate_contract(FAR_CLAUSE_MATRIX_PATH, file_to_highlight, output_filepath, review_label(ai_notice))
-    return flagged_count, ai_notice
-
-# Says in the scanned document which review flagged the language, so it is clear without the app's notice
-def review_label(ai_notice):
-    if provider_name() and ai_notice is None:
-        return f"AI review ({provider_name()}, {model_name()})"
-    if ai_notice:
-        return "Basic matcher (TF-IDF similarity), because the AI review was unavailable"
-    return "Basic matcher (TF-IDF similarity)"
-
-# Flags problem language with the LLM named in .env (US-12), or with the TF-IDF matcher when no LLM
-# is configured. If the LLM call fails, the scan falls back to the matcher instead of failing.
-def flag_problem_language(contract_txt, flagged_txt):
-    return _review_with_fallback(
-        lambda: llm_flag_problem_language(TNC_MATRIX_PATH, contract_txt, flagged_txt),
-        lambda: _flag_problem_language(TNC_MATRIX_PATH, contract_txt, flagged_txt, SIMILARITY_THRESHOLD))
-
-# Same review and fallback as flag_problem_language, but returns the flags as a list of
-# (flagged text, details) instead of writing them, so the workbench can show them (US-19)
-def flag_problem_language_data(contract_text):
+# Flags problem language with the AI review (US-12). Returns a list of (flagged text, details), where the
+# details come from the Ts&Cs Matrix row the model named plus the model's own explanation. There is no
+# fallback to the TF-IDF matcher: OSP uses the tool only with an approved AI provider, so an AI failure
+# fails the scan with the reason. (The matcher is kept in evaluation/ as the accuracy baseline.)
+def ai_flags(contract_text):
     tnc_dictionary = load_tnc_matrix(TNC_MATRIX_PATH)
-    return _review_with_fallback(lambda: _ai_flags(contract_text, tnc_dictionary),
-                                 lambda: _matcher_flags(contract_text, tnc_dictionary))
-
-def _ai_flags(contract_text, tnc_dictionary):
-    issues = review_contract(contract_text, tnc_dictionary)
+    try:
+        issues = review_contract(contract_text, tnc_dictionary)
+    except LLMConfigError as error:
+        raise AIReviewError(f"{AI_NOT_SET_UP} ({error})") from error
+    except Exception as error:
+        raise AIReviewError(f"The AI service ({provider_name()}) did not return a usable result. "
+                            "Try again later; details were logged.") from error
     return [(issue["quote"], _issue_details(issue, tnc_dictionary)) for issue in issues]
 
-def _matcher_flags(contract_text, tnc_dictionary):
-    return list(flag_sentences(tnc_dictionary, contract_text, SIMILARITY_THRESHOLD).items())
-
-# Runs the AI review when an LLM is configured, otherwise the matcher. Returns the result and a notice for
-# the reviewer when the AI review was configured but could not run, in which case the matcher is used.
-def _review_with_fallback(ai_review, basic_matcher):
-    provider = provider_name()
-    if provider:
-        try:
-            return ai_review(), None
-        except LLMConfigError as error:
-            logger.warning("AI review not run: %s", error)
-            reason = str(error)
-        except Exception:
-            logger.exception("AI review with %s failed; using the basic matcher", provider)
-            reason = f"The AI service ({provider}) did not return a usable result. Details were logged."
-        ai_notice = f"AI review unavailable, so the basic matcher was used. {reason}"
-    else:
-        ai_notice = None
-    return basic_matcher(), ai_notice
-
-# Scans a contract like scan_contract and also returns the results the workbench shows
+# Scans a contract, writes the annotated copy, and returns the results the workbench shows
 # (scan_results.build_results). on_stage is called with the name of each step before it starts,
-# so the caller can show progress, or stop the scan by raising an exception. The annotate step also
-# passes the AI notice, so the caller can say the matcher was used while the scan is still running.
-def scan_contract_with_results(filepath, output_filepath, on_stage=lambda stage, ai_notice=None: None):
+# so the caller can show progress, or stop the scan by raising an exception.
+# Intermediate files go in the same directory as output_filepath, so concurrent scans never share files.
+def scan_contract_with_results(filepath, output_filepath, on_stage=lambda stage: None):
     work_dir = os.path.dirname(os.path.abspath(output_filepath))
     contract_txt = os.path.join(work_dir, 'contract_to_txt.txt')
     flagged_txt = os.path.join(work_dir, 'flagged_contract_to_txt.txt')
@@ -185,14 +138,14 @@ def scan_contract_with_results(filepath, output_filepath, on_stage=lambda stage,
     with open(contract_txt, 'r', encoding='utf-8') as file:
         contract_text = file.read()
     on_stage("review")
-    flags, ai_notice = flag_problem_language_data(contract_text)
-    on_stage("annotate", ai_notice)
+    flags = ai_flags(contract_text)
+    on_stage("annotate")
     write_flagged_text(contract_text, flags, flagged_txt)
     txt_to_docx(flagged_txt, file_to_highlight)
-    label = review_label(ai_notice)
+    label = review_label()
     annotate_contract(FAR_CLAUSE_MATRIX_PATH, file_to_highlight, output_filepath, label)
     far_clauses, far_rows = far_matches(contract_text, FAR_CLAUSE_MATRIX_PATH)
-    return build_results(contract_text, flags, far_clauses, far_rows, label, ai_notice)
+    return build_results(contract_text, flags, far_clauses, far_rows, label)
 
 def getFilenameStringNoExtension(filename):
     temp_list = filename.split(".")
@@ -252,7 +205,6 @@ class Scan:
     stage: str = "queued"
     started_at: float = field(default_factory=time.monotonic)
     finished_at: float | None = None
-    ai_notice: str | None = None
     error: str | None = None
     flagged_count: int = 0
     results: dict | None = None
@@ -280,7 +232,7 @@ def run_scan(scan, upload):
         _end(scan, "failed")
     else:
         scan.results, scan.docx_bytes = results, docx_bytes
-        scan.flagged_count, scan.ai_notice = len(results["flags"]), results["ai_notice"]
+        scan.flagged_count = len(results["flags"])
         _end(scan, "done")
 
 # Scans the upload in a working directory of its own, which is removed before the scan is marked as ended,
@@ -290,20 +242,16 @@ def _scan_in_work_dir(scan, upload):
     try:
         upload_filepath = write_binary_to_temp_file(scan.filename, upload, work_dir)
         output_filepath = os.path.join(work_dir, scan.docx_name)
-        results = scan_contract_with_results(upload_filepath, output_filepath,
-                                             lambda stage, ai_notice=None: _set_stage(scan, stage, ai_notice))
+        results = scan_contract_with_results(upload_filepath, output_filepath, lambda stage: _set_stage(scan, stage))
         with open(output_filepath, 'rb') as file:
             return results, file.read()
     finally:
         remove_work_dir(work_dir)
 
-# Cancelling is checked between steps: a step in progress finishes, then the scan stops with no results.
-# The notice is written before the stage, so a reviewer who sees the annotate step also sees the notice.
-def _set_stage(scan, stage, ai_notice=None):
+# Cancelling is checked between steps: a step in progress finishes, then the scan stops with no results
+def _set_stage(scan, stage):
     if scan.cancelled:
         raise ScanCancelled
-    if ai_notice is not None:
-        scan.ai_notice = ai_notice
     scan.stage = stage
 
 # The stage is written last, so a reviewer who sees "done" can fetch the results
@@ -346,6 +294,10 @@ def _get_finished_scan(scan_id):
 
 @app.post("/api/scans", status_code=202)
 def start_scan(file: UploadFile):
+    # Without an AI provider there is nothing to scan with, so the upload is turned down before it is read
+    problem = ai_setup_problem()
+    if problem:
+        raise HTTPException(503, problem)
     upload = _read_upload(file, ACCEPTED_EXTENSIONS, "Only .docx, .doc, or .pdf files can be scanned.")
     scan = Scan(id=secrets.token_urlsafe(16), filename=file.filename,
                 docx_name=f"{getFilenameStringNoExtension(safe_filename(file.filename))}_scanned.docx")
@@ -362,10 +314,8 @@ def scan_status(scan_id: str):
         "id": scan.id,
         "filename": scan.filename,
         "stage": scan.stage,
-        "review_method": review_method(scan.ai_notice),
         "elapsed_seconds": scan.elapsed_seconds(),
         "flagged_count": scan.flagged_count,
-        "ai_notice": scan.ai_notice,
         "error": scan.error,
     }
 
@@ -391,10 +341,13 @@ def delete_scan(scan_id: str):
     scan.cancelled = True
     return Response(status_code=204)
 
+# Whether the AI review is set up, so the workbench can say so before anyone uploads a contract
 @app.get("/api/config")
 def get_config():
+    problem = ai_setup_problem()
     provider = provider_name()
-    return {"review_method": review_method(), "provider": provider, "model": model_name() if provider else None}
+    return {"ai_ready": problem is None, "problem": problem,
+            "provider": provider, "model": model_name() if provider else None}
 
 # Checks a subcontractor's audit report for findings (US-3b). Kept for the subcontract scanner,
 # which has no screen in the workbench yet.
@@ -432,5 +385,9 @@ if __name__ == "__main__":
         check_matrices()
     except ConfigError as error:
         raise SystemExit(f"Configuration error: {error}")
+    # The server still starts, so reviewers see why scans are turned down instead of a dead page
+    if configuration_problem():
+        logger.warning("AI review is not set up: %s. Uploads will be turned down until it is (docs/AI_REVIEW.md).",
+                       configuration_problem())
     remove_stale_work_dirs()
     uvicorn.run(app, host=HOST, port=PORT)

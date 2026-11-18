@@ -20,7 +20,7 @@ def test_unsupported_file_type_raises_instead_of_reusing_the_previous_scan(tmp_p
     with pytest.raises(UnsupportedFileError, match="'.rtf' files are not supported"):
         convert_to_txt(str(upload_path))
     with pytest.raises(UnsupportedFileError):
-        main.scan_file(str(upload_path), str(tmp_path / "out.docx"))
+        main.scan_contract_with_results(str(upload_path), str(tmp_path / "out.docx"))
     assert not (tmp_path / "out.docx").exists()
 
 
@@ -45,6 +45,15 @@ def test_failure_message_explains_known_problems_and_logs_unexpected_ones(caplog
     assert "Could not process b.pdf" in caplog.text
 
 
+def test_failed_ai_review_is_reported_as_such_and_logged(caplog):
+    error = main.AIReviewError("The AI service (gemini) did not return a usable result.")
+    error.__cause__ = ConnectionError("rate limited")
+    with caplog.at_level(logging.ERROR, logger="aicr"):
+        message = main.failure_message("c.docx", error)
+    assert message == "Could not review c.docx. The AI service (gemini) did not return a usable result."
+    assert "AI review of c.docx failed" in caplog.text
+
+
 def test_damaged_subcontract_pdf_is_reported_not_marked_clean(client):
     response = upload(client, "audit.pdf", b"%PDF-1.4 this is not a real PDF", "/api/subcontract-scans")
     assert response.status_code == 422
@@ -67,11 +76,4 @@ def test_successful_scan_says_whether_anything_was_found(client, wait_for_scan, 
     fake_scan(flagged=flagged)
     status = wait_for_scan(client, upload(client, "contract.docx", b"stand-in").json()["id"])
     assert (status["stage"], status["flagged_count"], status["error"]) == ("done", flagged, None)
-    assert client.get(f"/api/scans/{status['id']}/download").status_code == 200
-
-
-def test_ai_fallback_notice_is_shown(client, wait_for_scan, fake_scan):
-    fake_scan(flagged=1, ai_notice="AI review unavailable, so the basic matcher was used.")
-    status = wait_for_scan(client, upload(client, "contract.docx", b"stand-in").json()["id"])
-    assert "AI review unavailable" in status["ai_notice"]
     assert client.get(f"/api/scans/{status['id']}/download").status_code == 200

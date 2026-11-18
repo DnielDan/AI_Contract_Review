@@ -1,7 +1,7 @@
 """LLM review of contract language against the Ts&Cs Matrix (US-12).
 
-Takes the place of the TF-IDF matcher in flag_problem_language.py when an LLM is configured in .env.
-The model returns the passages it flags with the matrix row each one matches; the matrix's own
+The only way the app flags problem language: there is no fallback to the old TF-IDF matcher, which is
+kept in evaluation/ as the accuracy baseline. The model returns the passages it flags with the matrix row each one matches; the matrix's own
 "Why", "1st response to Sponsor" and Auburn's preferred language are then looked up from that row,
 so the guidance a reviewer sees always comes from the matrix, never from the model.
 FAR clauses are not sent to the model: they are still highlighted by the exact lookup in
@@ -10,7 +10,6 @@ flag_FAR_clauses.py.
 import json
 import re
 
-from flag_problem_language import load_tnc_matrix, write_flagged_text
 from llm_providers import generate_structured
 
 
@@ -168,18 +167,3 @@ def _decoded(value):
 def _as_issue(item):
     item = _decoded(item)
     return item if isinstance(item, dict) else None
-
-
-# Writes the contract with each flagged passage marked in its paragraph, in the same layout as the
-# TF-IDF matcher (flag_problem_language.write_flagged_text), so the rest of the pipeline is unchanged.
-# Issues whose quote could not be found in the text are listed at the end rather than dropped.
-# Returns the number of issues flagged.
-def llm_flag_problem_language(tnc_path_in, contract_txt_path, flagged_txt_path):
-    tnc_dictionary = load_tnc_matrix(tnc_path_in)
-    with open(contract_txt_path, "r", encoding="utf-8") as file:
-        contract_text = file.read()
-
-    issues = review_contract(contract_text, tnc_dictionary)
-    flags = [(issue["quote"], _issue_details(issue, tnc_dictionary)) for issue in issues]
-    write_flagged_text(contract_text, flags, flagged_txt_path)
-    return len(issues)

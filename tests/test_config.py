@@ -1,4 +1,4 @@
-"""Configurable matrices and threshold (US-7)."""
+"""Configurable matrices (US-7)."""
 import pytest
 
 import main
@@ -21,17 +21,8 @@ def test_matrix_without_expected_columns_is_reported(tmp_path):
         main.check_matrices(far_path=str(wrong))
 
 
-def test_paths_and_threshold_come_from_settings(monkeypatch):
+def test_matrix_paths_come_from_settings(monkeypatch):
     monkeypatch.setenv("AICR_TNC_MATRIX", "custom/matrix.xlsm")
     assert main._configured_path("AICR_TNC_MATRIX", "default") == str(main.os.path.join(main.BASE_DIR, "custom/matrix.xlsm"))
     monkeypatch.delenv("AICR_TNC_MATRIX")
     assert main._configured_path("AICR_TNC_MATRIX", "default") == "default"
-    monkeypatch.setenv("AICR_SIMILARITY_THRESHOLD", "0.35")
-    assert main._configured_threshold() == 0.35
-
-
-@pytest.mark.parametrize("value", ["abc", "1.5", "0"])
-def test_invalid_threshold_is_reported(monkeypatch, value):
-    monkeypatch.setenv("AICR_SIMILARITY_THRESHOLD", value)
-    with pytest.raises(main.ConfigError, match="AICR_SIMILARITY_THRESHOLD"):
-        main._configured_threshold()

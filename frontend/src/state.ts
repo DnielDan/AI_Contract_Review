@@ -1,5 +1,5 @@
 // The workbench's state, changed only through reducer() (used by App with useReducer)
-import type { Flag, ReviewMethod, ScanResults, ScanStarted, ScanStatus, Stage } from './types'
+import type { Flag, ScanResults, ScanStarted, ScanStatus, Stage } from './types'
 
 export const ZOOMS = [
   { id: 'fit', label: 'Fit width' },
@@ -15,12 +15,9 @@ export interface ScanEntry {
   id: string
   filename: string
   stage: Stage
-  reviewMethod: ReviewMethod
   elapsedSeconds: number
-  aiNotice: string | null
   error: string | null
   results: ScanResults | null
-  noticeDismissed: boolean
 }
 
 export interface State {
@@ -32,7 +29,7 @@ export interface State {
   panelCollapsed: boolean
   filter: Filter
   zoom: number
-  reviewMethod: ReviewMethod // how the server reviews language, until a scan reports its own
+  aiSetupProblem: string | null // why the server cannot scan yet (no AI provider set up), or null
 }
 
 export type Action =
@@ -47,8 +44,7 @@ export type Action =
   | { type: 'filter'; filter: Filter }
   | { type: 'togglePanel' }
   | { type: 'zoom'; zoom: number }
-  | { type: 'dismissNotice'; id: string }
-  | { type: 'config'; reviewMethod: ReviewMethod }
+  | { type: 'config'; aiSetupProblem: string | null }
 
 export const initialState: State = {
   scans: [],
@@ -59,16 +55,12 @@ export const initialState: State = {
   panelCollapsed: false,
   filter: 'all',
   zoom: 0,
-  reviewMethod: 'matcher',
+  aiSetupProblem: null,
 }
 
-// Adds a scan the server has just accepted or turned down. Its steps are named after the review
-// the server is set up for until the scan's first progress report.
+// Adds a scan the server has just accepted or turned down
 function addScan(state: State, id: string, filename: string, stage: Stage, error: string | null = null): State {
-  const scan: ScanEntry = {
-    id, filename, stage, error,
-    reviewMethod: state.reviewMethod, elapsedSeconds: 0, aiNotice: null, results: null, noticeDismissed: false,
-  }
+  const scan: ScanEntry = { id, filename, stage, error, elapsedSeconds: 0, results: null }
   return { ...state, scans: [...state.scans, scan] }
 }
 
@@ -94,10 +86,8 @@ export function reducer(state: State, action: Action): State {
     case 'rejected':
       return addScan(state, action.id, action.filename, 'failed', action.error)
     case 'status': {
-      const { id, stage, review_method, elapsed_seconds, ai_notice, error } = action.status
-      return unlessCancelled(state, id, {
-        stage, reviewMethod: review_method, elapsedSeconds: elapsed_seconds, aiNotice: ai_notice, error,
-      })
+      const { id, stage, elapsed_seconds, error } = action.status
+      return unlessCancelled(state, id, { stage, elapsedSeconds: elapsed_seconds, error })
     }
     case 'results':
       return updateScan(state, action.id, () => ({ results: action.results }))
@@ -125,9 +115,7 @@ export function reducer(state: State, action: Action): State {
       return { ...state, panelCollapsed: !state.panelCollapsed }
     case 'zoom':
       return { ...state, zoom: Math.min(Math.max(action.zoom, 0), ZOOMS.length - 1) }
-    case 'dismissNotice':
-      return updateScan(state, action.id, () => ({ noticeDismissed: true }))
     case 'config':
-      return { ...state, reviewMethod: action.reviewMethod }
+      return { ...state, aiSetupProblem: action.aiSetupProblem }
   }
 }

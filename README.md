@@ -32,7 +32,7 @@ cd ..
 python main.py
 ```
 
-This serves the workbench at http://127.0.0.1:8080. Drop a contract on the left to scan it; the progress card shows each step. When the scan finishes, the contract is shown with its flagged passages and FAR clauses highlighted, each flag has a card on the right with the matrix guidance, and the download button saves the annotated `<name>_scanned.docx`. Scans are kept in memory for the session only, and an uploaded file is deleted from the server as soon as its scan ends. The subcontractor audit check has no screen yet; it is available to programs as `POST /api/subcontract-scans`.
+This serves the workbench at http://127.0.0.1:8080. Scanning needs an AI provider set up in `.env` (see "Settings and AI review"); until then the workbench shows a yellow "AI review is not set up" banner and turns down uploads. Drop a contract on the left to scan it; the progress card shows each step. When the scan finishes, the contract is shown with its flagged passages and FAR clauses highlighted, each flag has a card on the right with the matrix guidance, and the download button saves the annotated `<name>_scanned.docx`. Scans are kept in memory for the session only, and an uploaded file is deleted from the server as soon as its scan ends. The subcontractor audit check has no screen yet; it is available to programs as `POST /api/subcontract-scans`.
 
 Launch options are set with environment variables:
 
@@ -46,15 +46,15 @@ Launch options are set with environment variables:
 ## Settings and AI review
 Settings can also go in a `.env` file in the repository folder: copy `.env.example` to `.env` and fill in what you need. `.env` is ignored by git, so API keys never reach the repository.
 
-**AI review (US-12).** Set `LLM_PROVIDER` to have an LLM review the contract's language instead of the basic matcher, then fill in that provider's key:
+**AI review (US-12).** The app reviews contract language only with an AI provider: OSP will use the tool once Auburn's agreement with an AI provider is signed, so there is no non-AI mode. Set `LLM_PROVIDER` and fill in that provider's key:
 
 | `LLM_PROVIDER` | Key to fill in | Notes |
 |---|---|---|
-| `openrouter` | `OPENROUTER_API_KEY` | What the team uses for now. Sample contracts only: OpenRouter forwards text to third-party providers. |
 | `anthropic` | `ANTHROPIC_API_KEY` | Claude. |
 | `gemini` | `GEMINI_API_KEY` | Google Gemini. |
+| `openrouter` | `OPENROUTER_API_KEY` | Development on sample contracts only: OpenRouter forwards text to third-party providers. |
 
-`LLM_MODEL` picks a model other than the provider's default. For each flagged passage the output shows the matrix's own guidance (category, "Why", Auburn's preferred language, first response to the sponsor) plus the AI's explanation and suggested change, labeled as such. FAR clauses are still highlighted by the exact lookup. If the AI call fails (missing key, rate limit, outage), the scan uses the basic matcher and the app says so. With `LLM_PROVIDER` empty, nothing is sent anywhere.
+`LLM_MODEL` picks a model other than the provider's default. For each flagged passage the output shows the matrix's own guidance (category, "Why", Auburn's preferred language, first response to the sponsor) plus the AI's explanation and suggested change, labeled as such. FAR clauses are still highlighted by the exact lookup in the FAR Matrix. If the AI call fails (rate limit, outage, unreadable reply), the scan fails and says why; it does not fall back to the old TF-IDF matcher, which is kept only as the accuracy baseline in `evaluation/`. With `LLM_PROVIDER` empty, nothing is sent anywhere and no contract can be scanned.
 
 For how the AI review works and how to change or evaluate it, see [docs/AI_REVIEW.md](docs/AI_REVIEW.md).
 
@@ -78,34 +78,35 @@ You only need a key for the one provider you want to use.
    ```
    Paste the key right after the `=`, with no quotes or spaces, on the line for your provider (`ANTHROPIC_API_KEY` for `anthropic`, `GEMINI_API_KEY` for `gemini`). Leave the other key lines empty.
 5. **Optional: choose a model** with `LLM_MODEL=`. Leave it empty to use the provider's default. Free OpenRouter models come and go, so if the default stops working, pick another model from OpenRouter's model list (free ones end in `:free`).
-6. **Check that it works:** run `python main.py`, open the AI Contract Scanner, and upload a sample contract. If the AI ran, there is no "AI review unavailable" warning and the flagged passages in the output include "AI justification" and "AI suggested change". The AI review takes longer than the basic matcher (up to a few minutes per contract on a free model).
+6. **Check that it works:** run `python main.py`, open http://127.0.0.1:8080, and upload a sample contract. If the AI is set up, there is no yellow "not set up" banner, the scan's middle step is "AI review", and the flag cards include "AI justification" and "AI suggested change". The AI review can take a few minutes per contract on a free model.
 7. **Optional: measure its accuracy** on the labeled test set without overwriting the recorded results: `python -m evaluation.evaluate --scanner llm --split dev --no-save` (one request per contract).
 
-To switch providers later, change `LLM_PROVIDER` and fill in that provider's key; no code changes are needed. To turn the AI off, leave `LLM_PROVIDER` empty.
+To switch providers later, change `LLM_PROVIDER` and fill in that provider's key; no code changes are needed. Restart the server after changing `.env`.
 
-**If you see "AI review unavailable, so the basic matcher was used":**
+**If uploads are turned down or a scan fails:**
 
-| The warning goes on to say | Cause | Fix |
+| The message says | Cause | Fix |
 |---|---|---|
-| `..._API_KEY is not set in .env` | The key line for the chosen provider is empty, or `.env` was not saved | Paste the key on that line and save `.env` |
-| `Unknown LLM_PROVIDER` | `LLM_PROVIDER` is misspelled | Use `openrouter`, `anthropic`, or `gemini` |
-| `did not return a usable result` | The key is wrong, the model no longer exists, the provider is rate-limiting you, or the service is down | Check the log in the terminal for the exact error; check the key, try another `LLM_MODEL`, or try again later |
+| `AI review is not set up ... LLM_PROVIDER is not set` | No provider in `.env` | Set `LLM_PROVIDER` and that provider's key, then restart |
+| `AI review is not set up ... _API_KEY is not set in .env` | The key line for the chosen provider is empty, or `.env` was not saved | Paste the key on that line, save `.env`, and restart |
+| `AI review is not set up ... Unknown LLM_PROVIDER` | `LLM_PROVIDER` is misspelled | Use `anthropic`, `gemini`, or `openrouter` |
+| `Could not review ... did not return a usable result` | The key is wrong, the model no longer exists, the provider is rate-limiting you, or the service is down | Check the log in the terminal for the exact error; check the key, try another `LLM_MODEL`, or try again later |
 
 **Keeping keys and contracts safe**
 - Never commit `.env` (git ignores it) and never paste a key into chat, issues, or code.
 - If a key is exposed, delete it on the provider's site and create a new one.
 - Use only the sample contracts until OSP and Auburn IT approve a provider for real contracts: a hosted provider receives the contract text.
 
-**Matrices and matcher (US-7).** `AICR_FAR_MATRIX` and `AICR_TNC_MATRIX` point to updated matrix files (paths relative to the repository folder; default: the bundled files), and `AICR_SIMILARITY_THRESHOLD` sets the basic matcher's threshold (default `0.20`). The app checks both matrices when it starts and stops with a clear message if one is missing or lacks the expected columns.
+**Matrices (US-7).** `AICR_FAR_MATRIX` and `AICR_TNC_MATRIX` point to updated matrix files (paths relative to the repository folder; default: the bundled files). The AI review is given the Ts&Cs Matrix's Common Problems, and each flag's guidance is looked up from it. The app checks both matrices when it starts and stops with a clear message if one is missing or lacks the expected columns.
 
 ## Running the tests
 ```
 python -m pytest
 ```
 
-The tests cover text extraction, matrix parsing, problem-language flagging, FAR clause highlighting, the workbench API, and a full scan of a sample contract. GitHub Actions builds the workbench and runs them on Linux for every pull request and every push to `main` (`.github/workflows/tests.yml`); they run offline and never send contract text to an external service.
+The tests cover text extraction, matrix parsing, the AI review's handling of replies and failures, FAR clause highlighting, the workbench API, and a full scan of a sample contract. Scans in the tests use a stand-in for the AI review (`tests/fakes.py`), and any call to a real provider fails the test, so they run offline and never send contract text to an external service, even when your `.env` holds a key. GitHub Actions builds the workbench and runs them on Linux for every pull request and every push to `main` (`.github/workflows/tests.yml`).
 
-A browser test of the workbench (`tests/test_e2e_workbench.py`) is left out of the default run. It needs Playwright with Chromium (`pip install playwright` and `playwright install chromium`) and the built workbench:
+A browser test of the workbench (`tests/test_e2e_workbench.py`) is left out of the default run. It starts the app with the stand-in AI review (`tests/e2e_server.py`) and needs Playwright with Chromium (`pip install playwright` and `playwright install chromium`) and the built workbench:
 ```
 python -m pytest -m e2e tests/test_e2e_workbench.py
 ```
@@ -116,7 +117,7 @@ If Playwright is installed in a different Python environment, run the test with 
 ```
 python -m evaluation.evaluate --scanner baseline --split dev
 ```
-Use `--scanner llm` to score the AI review with the provider set in `.env` (each run calls the provider and may be billed). See `evaluation/README.md` for how the labels were made, their limits, and the current baseline.
+`baseline` is the inherited TF-IDF matcher (`evaluation/tfidf_matcher.py`), which the app no longer uses and which is kept unchanged so the AI review can be compared with it. Use `--scanner llm` to score the AI review with the provider set in `.env` (each run calls the provider and may be billed). See `evaluation/README.md` for how the labels were made, their limits, and the current baseline.
 
 ## Sample files
 Sample documents for trying each scanner are in `supplementary_files/samples_test_set/`:
@@ -131,9 +132,9 @@ Sample documents for trying each scanner are in `supplementary_files/samples_tes
 `0264-23 Godwin - fully executed.pdf` is a scanned image with no text layer, so it produces an output with nothing flagged.
 
 ## What the app currently does
-- **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text. With an LLM set in `.env`, the LLM reviews the text against the Ts&Cs Matrix (see "Settings and AI review"); otherwise it compares each sentence with the "Common Problems" entries in the Contract Ts&Cs Matrix using TF-IDF cosine similarity, and marks matches in the output with the matrix's category, Auburn's preferred language, "Why" explanation, suggested first response to the sponsor, and a similarity score. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove). In the output, the contract keeps its paragraphs: a paragraph with flagged language is highlighted yellow, everything the tool adds (Ts&Cs guidance, FAR Matrix notes on each FAR clause, AI text) is highlighted gray, text written by the AI is also italic blue, and a line at the top says whether the AI review or the basic matcher was used. The workbench shows the same flags on the contract in the browser, with a card for each.
+- **AI Contract Scanner:** converts an uploaded `.docx`, `.doc`, or `.pdf` to text, and the AI provider set in `.env` reviews it against the "Common Problems" in the Contract Ts&Cs Matrix (see "Settings and AI review"). Each flagged passage is marked in the output with the matrix's category, Auburn's preferred language, "Why" explanation, and suggested first response to the sponsor, plus the AI's own explanation, suggested change, and confidence. It also highlights FAR clause numbers found in the FAR Matrix by acceptance status (green OK, turquoise conditional, red remove). In the output, the contract keeps its paragraphs: a paragraph with flagged language is highlighted yellow, everything the tool adds (Ts&Cs guidance, FAR Matrix notes on each FAR clause, AI text) is highlighted gray, text written by the AI is also italic blue, and a line at the top names the AI provider and model. The workbench shows the same flags on the contract in the browser, with a card for each.
 - **Subcontractor Agreement Scanner:** searches an uploaded PDF for three audit-finding phrases (for example, "Material weaknesses identified? Yes") and reports flagged or not flagged. It has no screen in the workbench yet (API only).
-- Without `LLM_PROVIDER` set, all analysis is local pattern and similarity matching and no contract text leaves the machine.
+- Without `LLM_PROVIDER` set, no contract text leaves the machine and contract scans are turned down. The subcontractor check never uses the AI.
 
 ## Project history
 The sections below are from the Spring 2024 teams and describe the project's original goals.

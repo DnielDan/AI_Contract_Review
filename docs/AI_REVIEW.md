@@ -4,21 +4,25 @@ This guide is for developers working on the AI contract review (US-7, US-12). To
 and turn the AI review on, follow "Adding an API key" in the main [README](../README.md).
 
 ## How it works
-When a contract is scanned (`main.scan_contract`; the workbench uses `main.scan_contract_with_results`,
-which runs the same steps and also returns the flags as data for the browser):
+The app scans contracts only with an AI provider. OSP decided (sponsor meeting, 11/18/2026) that the
+tool will be used only once Auburn's agreement with an AI provider is signed, so the old TF-IDF matcher
+is no longer a fallback; it is kept unchanged in `evaluation/tfidf_matcher.py` as the accuracy baseline.
+
+**Before a scan:** while `LLM_PROVIDER` or its key is missing (`llm_providers.configuration_problem`),
+`GET /api/config` reports `ai_ready: false` with the reason, the workbench shows a yellow "AI review is
+not set up" banner, and `POST /api/scans` turns every upload down with a 503 before reading it. The
+server still starts and logs a warning, so reviewers see why instead of a dead page.
+
+When a contract is scanned (`main.scan_contract_with_results`, which also returns the flags as data for
+the browser):
 
 1. The upload is converted to plain text (`contract_to_txt.py`).
-2. `main.flag_problem_language` decides how problem language is flagged (`main.flag_problem_language_data`
-   in the workbench, with the same choice and fallback, calling `llm_review.review_contract` and
-   `flag_problem_language.flag_sentences` directly):
-   - **`LLM_PROVIDER` set in `.env`:** `llm_review.llm_flag_problem_language` sends the contract text
-     and the Ts&Cs Matrix's "Common Problems" to the model. The model returns each problem passage
-     with the matrix sheet (category) and the Common Problem it matches, a short explanation, a
-     suggested replacement, and a confidence.
-   - **`LLM_PROVIDER` empty:** the TF-IDF matcher (`flag_problem_language._flag_problem_language`).
-   - **The AI call fails** (missing key, rate limit, outage, unreadable reply): the scan falls back to
-     the TF-IDF matcher and the reviewer sees an "AI review unavailable" warning. This is the fallback
-     US-12 asks for and that US-18 shows in the new interface.
+2. `main.ai_flags` calls `llm_review.review_contract`, which sends the contract text and the Ts&Cs
+   Matrix's "Common Problems" to the model. The model returns each problem passage with the matrix
+   sheet (category) and the Common Problem it matches, a short explanation, a suggested replacement,
+   and a confidence. If the call fails (rate limit, outage, unreadable reply), the scan **fails** with
+   "Could not review <file>. The AI service (<provider>) did not return a usable result", and the cause
+   is logged (`main.AIReviewError`, `main.failure_message`).
 3. For each AI flag, the "Why", "1st response to Sponsor" and Auburn's preferred language are looked
    up from the matrix row the model named, so that guidance always comes from the matrix. The model's
    own explanation and suggested change are shown separately and labeled "AI". A named row that is
@@ -27,10 +31,9 @@ which runs the same steps and also returns the flags as data for the browser):
 4. FAR clauses are never sent to the model; they are highlighted by the exact-match lookup in
    `flag_FAR_clauses.py`.
 5. The flagged text becomes the annotated `_scanned.docx` (`flag_FAR_clauses.annotate_contract`). A line at
-   the top says which review flagged the language (AI review with provider and model, or the basic
-   matcher, noting when the AI was unavailable). The contract keeps its paragraphs; a paragraph with
-   flagged language is highlighted yellow and followed by a "Flagged sentence" line and the matrix
-   guidance (`flag_problem_language.write_flagged_text`, shared by the AI and the matcher). Everything
+   the top names the AI provider and model that flagged the language. The contract keeps its paragraphs;
+   a paragraph with flagged language is highlighted yellow and followed by a "Flagged sentence" line and
+   the matrix guidance (`flag_problem_language.write_flagged_text`). Everything
    the tool adds is highlighted gray: the Ts&Cs guidance, the AI's lines (also italic blue), and a note
    from the FAR Matrix (title, status, acceptance criteria, request to sponsor) after the first mention
    of each FAR clause. FAR clause numbers keep their status colors. The color legend explains all of this.
@@ -41,11 +44,12 @@ against prompt injection (full security checks are US-13).
 ### File map
 | File | What it does |
 |---|---|
-| `llm_providers.py` | Sends a prompt to the provider named by `LLM_PROVIDER` and returns structured JSON. OpenRouter and Gemini use the OpenAI-compatible API (`_OPENAI_COMPATIBLE_PRESETS`); Claude uses the Anthropic SDK with structured outputs (`_anthropic`). |
-| `llm_review.py` | Builds the prompt (`_build_prompt`) and the reply format (`_issue_schema`), reads the reply (`review_contract`), looks up matrix guidance (`_issue_details`), and writes the flagged text (`llm_flag_problem_language`). |
-| `main.py` | Reads settings from `.env`, checks the matrices at startup (`check_matrices`), chooses AI or matcher with the fallback (`_review_with_fallback`, used by `flag_problem_language` and `flag_problem_language_data`), and serves the workbench and its API. |
+| `llm_providers.py` | Checks the settings (`configuration_problem`), sends a prompt to the provider named by `LLM_PROVIDER`, and returns structured JSON. OpenRouter and Gemini use the OpenAI-compatible API (`_OPENAI_COMPATIBLE_PRESETS`); Claude uses the Anthropic SDK with structured outputs (`_anthropic`). |
+| `llm_review.py` | Builds the prompt (`_build_prompt`) and the reply format (`_issue_schema`), reads the reply (`review_contract`), and looks up matrix guidance (`_issue_details`). |
+| `main.py` | Reads settings from `.env`, checks the matrices at startup (`check_matrices`), runs the AI review (`ai_flags`) and reports its failures (`AIReviewError`), turns uploads down while the AI is not set up (`ai_setup_problem`), and serves the workbench and its API. |
 | `scan_results.py` | Turns a scan's flags and FAR clauses into the data the workbench shows (`build_results`). |
-| `evaluation/scanners.py` | The `llm` scanner used to score the AI review on the labeled test set. |
+| `evaluation/scanners.py` | The `llm` scanner (the AI review) and the `baseline` scanner (`evaluation/tfidf_matcher.py`, the inherited matcher) scored on the labeled test set. |
+| `tests/fakes.py` | The stand-in AI review used by the tests and by the browser test's server (`tests/e2e_server.py`). |
 | `.env.example` | Template for `.env`, which holds the settings and API keys and is never committed. |
 
 ## Common changes
@@ -74,25 +78,32 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
 
 ## Tests
 `python -m pytest` runs everything offline; no test calls a real AI service.
-- `tests/test_llm_review.py`: provider selection and errors, matrix-backed output, unmatched quotes,
-  reply formats the models have actually produced, retry, and the fallback to the matcher.
-- `tests/test_config.py`: matrix paths, threshold, and the startup matrix check.
-- `tests/conftest.py`: clears `LLM_PROVIDER` before every test, so a developer's `.env` key is never
-  used by the test suite. Tests that need an AI reply replace the network call with a fixed one.
+- `tests/test_llm_review.py`: provider selection and settings checks, matrix-backed output, unmatched
+  quotes, reply formats the models have actually produced, retry, and failures reported without a
+  matcher fallback.
+- `tests/test_api.py`: uploads turned down while the AI is not set up, and a failed AI review failing
+  the scan with its reason.
+- `tests/test_config.py`: matrix paths and the startup matrix check.
+- `tests/test_tfidf_baseline.py`: the inherited matcher kept as the evaluation baseline.
+- `tests/conftest.py`: clears `LLM_PROVIDER` before every test and makes any real provider call fail
+  the test, so a developer's `.env` key is never used. Full scans use the `fake_ai` fixture, which
+  answers with the stand-in in `tests/fakes.py`.
 
 ## Status (November 2026)
 **Done**
-- US-7: settings and keys in a gitignored `.env`; provider and model chosen there; matrix paths and
-  the matcher threshold configurable; matrices checked at startup.
+- US-7: settings and keys in a gitignored `.env`; provider and model chosen there; matrix paths
+  configurable; matrices checked at startup.
 - US-12 (implementation): AI review for OpenRouter, Claude and Gemini behind one setting; matrix-backed
-  guidance; FAR exact lookup kept; fallback to the matcher with a warning; `llm` evaluation scanner;
-  offline tests.
+  guidance; FAR exact lookup kept; `llm` evaluation scanner; offline tests.
+- AI-only scanning (sponsor decision, 11/18/2026): no matcher fallback; a failed AI review fails the
+  scan with its reason; uploads are turned down while no provider is set up; the matcher moved to
+  `evaluation/` as the baseline.
 
 **What the first live test showed (OpenRouter, free model)**
 - The free NVIDIA model used earlier (`nemotron-3-super-120b-a12b:free`) was removed from OpenRouter;
   the default is now `nvidia/nemotron-3.5-super-vl:free`. Free models change without notice.
 - The free model did not always follow the reply format (issues sent as text, JSON wrapped in prose,
-  unreadable replies). The code now accepts these variants and retries once before falling back.
+  unreadable replies). The code now accepts these variants and retries once before failing the scan.
 - It took 1 to 3.5 minutes per contract and flagged a different number of passages on repeated calls.
 - `evaluation/results/llm_dev.md` records one scoring run as a prototype record only. It is not
   representative of the model that will be chosen.
@@ -100,6 +111,9 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
   real key.
 
 **Open items**
+- Robustness: request timeout, no identical retry after a `max_tokens`/`length` cutoff, fewer stacked
+  retries, one AI scan at a time. These matter more now that an AI failure fails the scan.
+- US-23: hand-off guide for IT to add the approved provider's key once the agreement is signed.
 - When Claude or Gemini keys arrive: one test scan, then score on `dev` (more than one run).
 - Choose the provider and model (US-12). A hosted provider may be used on real contracts only after
   OSP and Auburn IT approve it under a data-protection agreement.

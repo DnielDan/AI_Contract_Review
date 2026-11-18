@@ -30,7 +30,7 @@ function ScanItem({ scan, selected, onSelect }: { scan: ScanEntry; selected: boo
     <div className={selected ? 'scan sel' : 'scan'} onClick={onSelect}>
       <NameRow
         scan={scan}
-        status={running ? stageName(scan.stage, scan.reviewMethod) : `✓ ${formatDuration(scan.elapsedSeconds)}`}
+        status={running ? stageName(scan.stage) : `✓ ${formatDuration(scan.elapsedSeconds)}`}
       />
       {running && (
         <div className="track">

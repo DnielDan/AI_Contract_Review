@@ -38,11 +38,11 @@ def test_pdf_control_characters_are_removed():
         assert not any(ord(char) < 32 and char not in "\n\t" for char in text)
 
 
-def test_full_scan_of_pdf_with_control_characters(tmp_path, monkeypatch):
+def test_full_scan_of_pdf_with_control_characters(tmp_path, monkeypatch, fake_ai):
     import main
     monkeypatch.chdir(tmp_path)
     output = tmp_path / "scanned.docx"
-    main.scan_file(MULTI_PAGE_PDF, str(output))
+    main.scan_contract_with_results(MULTI_PAGE_PDF, str(output))
     assert output.stat().st_size > 0
 
 

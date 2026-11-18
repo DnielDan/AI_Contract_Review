@@ -1,10 +1,10 @@
+"""Reads the Ts&Cs Matrix and writes the contract text with each flagged passage marked.
+
+The TF-IDF matcher that used to live here is now evaluation/tfidf_matcher.py (accuracy baseline only).
+"""
 import openpyxl
-import nltk
 import re
 from nltk.tokenize import sent_tokenize
-import sklearn
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 def extract_sheet_data(sheet):
 
@@ -52,60 +52,6 @@ def pretty_print_nested_values(dictionary):
                 output.append("\t\t" + str_value)
         output.append('')  # Add a blank line for separation
     return "\n".join(output)
-
-# This function generates a similarity score when comparing two sentences of a contract
-def sk_cosine_sim(sen1, sen2):
-    #print("Sentence 1: " + sen1 + "\n" + "Sentence 2:" + sen2)
-    # Convert texts into TF-IDF vectors
-    vect = TfidfVectorizer(min_df=1, stop_words="english")
-    vectors = vect.fit_transform([sen1, sen2])
-
-    # Calculate cosine similarity
-    sim = cosine_similarity(vectors)
-    return sim
-
-
-# Default similarity score above which a sentence is flagged; the app reads AICR_SIMILARITY_THRESHOLD (US-7)
-DEFAULT_SIMILARITY_THRESHOLD = 0.20
-
-# This function flags sentences based on how 'similar' they are to language
-# in the common problems cell of each T&Cs sheet.
-# contract_text defaults to the pipeline's contract_to_txt.txt; the evaluation passes text directly.
-def flag_sentences(tnc_dictionary, contract_text=None, threshold=DEFAULT_SIMILARITY_THRESHOLD):
-
-    if contract_text is None:
-        with open('contract_to_txt.txt', 'r', encoding = 'utf-8') as file:
-            contract_text = file.read()
-
-    contract_sentences = sent_tokenize(contract_text)
-
-    flagged_sentences = {}
-
-    for key, sub_dict in tnc_dictionary.items():
-        if "Common Problems" in sub_dict:
-            sheet_name = key
-            preferred_language = sub_dict.get("Auburn's Preferred Language", [])
-            why = sub_dict.get("Why", [])
-            response = sub_dict.get("1st response to Sponsor", [])
-            for sentence in contract_sentences:
-                i = 0
-                for value in sub_dict["Common Problems"]:
-                    
-                    similarity = sk_cosine_sim(value, sentence)
-                    if similarity[0][1] > threshold:
-                        if sentence not in flagged_sentences:
-                            flagged_sentences[sentence] = []
-                        flagged_sentences[sentence] = {
-                            "Problem Category" : sheet_name,
-                            "Common Problems" : value,
-                            "Preferred Language" : preferred_language,
-                            "Why" : why[i],
-                            "1st response to Sponsor" : response[i],
-                            "Confidence" : similarity[0][1] # Uncomment to show similarity score of flagged language compared to "Common Problems" from T&Cs
-                        }
-                    i += 1
-
-    return flagged_sentences
 
 # Loads every topic sheet of the Ts&Cs Matrix into {sheet name: sheet data}
 def load_tnc_matrix(tnc_path_in):
@@ -205,18 +151,3 @@ def write_flagged_text(contract_text, flags, flagged_txt_path):
     with open(flagged_txt_path, "w", encoding="utf-8") as file:
         for line in lines:
             file.write(line + "\n")
-
-
-# Flags sentences similar to the Ts&Cs Matrix's Common Problems and writes the contract with the flags
-# marked (see write_flagged_text). Returns the number of distinct sentences flagged.
-# The app passes paths inside the upload's own working directory; the defaults are the original filenames.
-def _flag_problem_language(tnc_path_in, contract_txt_path='contract_to_txt.txt',
-                           flagged_txt_path='flagged_contract_to_txt.txt', threshold=DEFAULT_SIMILARITY_THRESHOLD):
-    tnc_dictionary = load_tnc_matrix(tnc_path_in)
-
-    with open(contract_txt_path, 'r', encoding = 'utf-8') as file:
-        contract_text = file.read()
-    flagged_sentences = flag_sentences(tnc_dictionary, contract_text, threshold)
-
-    write_flagged_text(contract_text, list(flagged_sentences.items()), flagged_txt_path)
-    return len(flagged_sentences)

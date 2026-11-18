@@ -6,15 +6,16 @@ openpyxl==3.1.2
 pandas==2.2.2
 pypdf==6.19.0
 python-docx==1.2.0
-scikit-learn==1.4.2
 xlrd==2.0.2
+# Only for the TF-IDF baseline in evaluation/ (the app itself does not use the matcher)
+scikit-learn==1.4.2
 
 # Server for the workbench (US-19); the workbench itself is built from frontend/ with npm
 fastapi==0.163.2
 python-multipart==0.0.34
 uvicorn==0.54.0
 
-# AI review (US-12); only used when LLM_PROVIDER is set in .env
+# AI review (US-12); the provider is set with LLM_PROVIDER in .env
 anthropic==2.8.0
 openai==3.49.0
 python-dotenv==1.2.3

@@ -1,6 +1,8 @@
 """Keeps every test offline: a developer's .env may set LLM_PROVIDER and an API key, but tests must
-never call a hosted LLM or send contract text off the machine (US-15). Tests that exercise the AI
-review set LLM_PROVIDER themselves and replace the network call.
+never call a hosted LLM or send contract text off the machine (US-15). LLM_PROVIDER is cleared before
+every test, and the functions that call a provider are replaced with ones that fail the test. Tests that
+need a full scan use the fake_ai fixture, which makes the AI review look set up and answers with a
+stand-in (fakes.py).
 
 Also holds the API fixtures shared by the test files. They import main inside the fixture, so the
 browser test (test_e2e_workbench.py) can run with an interpreter that only has Playwright."""
@@ -16,9 +18,32 @@ def no_llm_provider(monkeypatch):
     monkeypatch.delenv("LLM_PROVIDER", raising=False)
 
 
+@pytest.fixture(autouse=True)
+def no_provider_calls(monkeypatch):
+    try:
+        import llm_providers
+    except ImportError:  # the browser test's interpreter may not have the project's packages
+        return
+
+    def blocked(*args, **kwargs):
+        raise AssertionError("A test tried to call a hosted LLM; use the fake_ai fixture instead")
+    monkeypatch.setattr(llm_providers, "_openai_compatible", blocked)
+    monkeypatch.setattr(llm_providers, "_anthropic", blocked)
+
+
 @pytest.fixture
-def client(monkeypatch, tmp_path):
-    """The API, with a fresh list of scans whose working directories go in tmp_path."""
+def fake_ai(monkeypatch):
+    """Makes the AI review look set up (provider, fake key, model) and answers with fakes.fake_review_contract."""
+    import main
+    from fakes import fake_review_contract, fake_settings
+    for name, value in fake_settings().items():
+        monkeypatch.setenv(name, value)
+    monkeypatch.setattr(main, "review_contract", fake_review_contract)
+
+
+@pytest.fixture
+def client(monkeypatch, tmp_path, fake_ai):
+    """The API with the AI review set up (fake_ai), a fresh list of scans, and working directories in tmp_path."""
     from fastapi.testclient import TestClient
 
     import main
@@ -47,15 +72,14 @@ def fake_scan(monkeypatch):
     annotated copy and reports `flagged` flags. The returned list collects (upload path, output path)."""
     import main
 
-    def install(flagged=0, ai_notice=None, docx=b"annotated contract"):
+    def install(flagged=0, docx=b"annotated contract"):
         calls = []
 
         def scan(path, output, on_stage):
             calls.append((path, output))
             with open(output, "wb") as file:
                 file.write(docx)
-            return {"paragraphs": [], "flags": [{}] * flagged, "far": [], "review_label": "",
-                    "review_method": "matcher", "ai_notice": ai_notice}
+            return {"paragraphs": [], "flags": [{}] * flagged, "far": [], "review_label": ""}
         monkeypatch.setattr(main, "scan_contract_with_results", scan)
         return calls
     return install
