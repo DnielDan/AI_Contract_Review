@@ -125,6 +125,8 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
 - AI-only scanning (sponsor decision, 11/18/2026): no matcher fallback; a failed AI review fails the
   scan with its reason; uploads are turned down while no provider is set up; the matcher moved to
   `evaluation/` as the baseline.
+- US-23: [IT_HANDOFF.md](IT_HANDOFF.md), the guide for IT to add the approved provider's key and check
+  the model once the agreement is signed.
 - Limits on AI calls: request timeout, no resending of a cut-off reply, at most two replies per
   contract, optional output limit and effort, one contract scan at a time (see "Limits on AI calls").
 
@@ -140,7 +142,6 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
   12–17); results and the recommendation are in [MODEL_RECOMMENDATION.md](MODEL_RECOMMENDATION.md).
 
 **Open items**
-- US-23: hand-off guide for IT to add the approved provider's key once the agreement is signed.
 - When Claude or Gemini keys arrive: one test scan, then score on `dev` (more than one run).
 - Choose the provider and model (US-12): the team recommends Gemini Flash; see
   [MODEL_RECOMMENDATION.md](MODEL_RECOMMENDATION.md) for the results and what to do first. A hosted provider may be used on real contracts only after

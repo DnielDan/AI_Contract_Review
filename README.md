@@ -57,7 +57,7 @@ Settings can also go in a `.env` file in the repository folder: copy `.env.examp
 
 `LLM_MODEL` picks a model other than the provider's default. For each flagged passage the output shows the matrix's own guidance (category, "Why", Auburn's preferred language, first response to the sponsor) plus the AI's explanation and suggested change, labeled as such. FAR clauses are still highlighted by the exact lookup in the FAR Matrix. If the AI call fails (rate limit, outage, unreadable reply), the scan fails and says why; it does not fall back to the old TF-IDF matcher, which is kept only as the accuracy baseline in `evaluation/`. With `LLM_PROVIDER` empty, nothing is sent anywhere and no contract can be scanned.
 
-For how the AI review works and how to change or evaluate it, see [docs/AI_REVIEW.md](docs/AI_REVIEW.md).
+For how the AI review works and how to change or evaluate it, see [docs/AI_REVIEW.md](docs/AI_REVIEW.md). **IT staff turning the AI review on once Auburn's agreement is signed:** follow [docs/IT_HANDOFF.md](docs/IT_HANDOFF.md); the model recommendation is in [docs/MODEL_RECOMMENDATION.md](docs/MODEL_RECOMMENDATION.md).
 
 ### Adding an API key (step by step)
 You only need a key for the one provider you want to use.

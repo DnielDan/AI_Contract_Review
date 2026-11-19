@@ -86,6 +86,6 @@ not set `AICR_HOST=0.0.0.0` (reachable from the network) outside a controlled se
 
 ## Checklist before real contracts are used
 1. Auburn's agreement with the AI provider is signed, and IT has confirmed its data-protection terms.
-2. IT puts that provider's key in `.env` on the server (see the IT hand-off guide).
+2. IT puts that provider's key in `.env` on the server (see the IT hand-off guide, [IT_HANDOFF.md](IT_HANDOFF.md)).
 3. The injection check passes with the configured provider and model, and its control case passes.
 4. OSP and Auburn IT approve the setup, including where the server runs and who can reach it.
