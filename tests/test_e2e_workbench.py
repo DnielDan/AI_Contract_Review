@@ -1,6 +1,7 @@
 """Browser test of the workbench (US-19): a real scan of a sample contract through the built frontend
-and the API, with the basic matcher. Left out of the default run because it needs Playwright with
-Chromium and the built frontend:
+and the API, with the stand-in AI review from fakes.py (the server is tests/e2e_server.py, so no AI
+provider is called). Left out of the default run because it needs Playwright with Chromium and the
+built frontend:
 
     cd frontend && npm run build
     python -m pytest -m e2e tests/test_e2e_workbench.py
@@ -55,9 +56,10 @@ def server(sync_api):
     if not os.path.isfile(os.path.join(ROOT, "frontend", "dist", "index.html")):
         pytest.fail("The workbench is not built: run npm ci and npm run build in frontend/")
     port = free_port()
-    # An empty LLM_PROVIDER takes precedence over .env, so the scan never calls an LLM
+    # e2e_server.py replaces the AI review with a stand-in and blocks real provider calls
     env = {**os.environ, "AICR_HOST": "127.0.0.1", "AICR_PORT": str(port), "LLM_PROVIDER": ""}
-    process = subprocess.Popen([os.environ.get("AICR_E2E_PYTHON", sys.executable), "main.py"], cwd=ROOT, env=env)
+    server_script = os.path.join("tests", "e2e_server.py")
+    process = subprocess.Popen([os.environ.get("AICR_E2E_PYTHON", sys.executable), server_script], cwd=ROOT, env=env)
     try:
         wait_until_up(f"http://127.0.0.1:{port}/api/config", process)
         yield f"http://127.0.0.1:{port}/"

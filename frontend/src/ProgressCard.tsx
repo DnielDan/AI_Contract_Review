@@ -1,4 +1,4 @@
-import { progressPercent, stepIndex, stepLabels } from './stages'
+import { progressPercent, STEP_LABELS, stepIndex } from './stages'
 import type { ScanEntry } from './state'
 
 function formatClock(seconds: number) {
@@ -14,7 +14,7 @@ function pillClass(index: number, current: number) {
 
 // Shows the step the server reports and the time taken so far; the server reports no finer progress
 export function ProgressCard({ scan, onCancel }: { scan: ScanEntry; onCancel: () => void }) {
-  const labels = stepLabels(scan.reviewMethod)
+  const labels = STEP_LABELS
   const current = stepIndex(scan.stage)
   return (
     <div className="pcard">

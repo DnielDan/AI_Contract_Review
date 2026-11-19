@@ -89,17 +89,7 @@ def test_review_label_is_shown_at_the_top(tmp_path):
     assert paragraphs[0].text == "Problem language reviewed by: AI review (openrouter, some-model)"
 
 
-def test_review_label_says_which_review_ran(monkeypatch):
-    assert main.review_label(None) == "Basic matcher (TF-IDF similarity)"
+def test_review_label_names_the_provider_and_model(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "openrouter")
     monkeypatch.setenv("LLM_MODEL", "some-model")
-    assert main.review_label(None) == "AI review (openrouter, some-model)"
-    assert "because the AI review was unavailable" in main.review_label("AI review unavailable ...")
-
-
-def test_full_scan_without_llm_is_labeled_as_matcher(tmp_path):
-    sample = main.os.path.join(main.SUPPLEMENTARY_DIR, "samples_test_set", "382_PAm-WilliamsFundingAgreementDraft.docx")
-    output = tmp_path / "scanned.docx"
-    main.scan_contract(sample, str(output))
-    first = Document(output).paragraphs[0].text
-    assert first == "Problem language reviewed by: Basic matcher (TF-IDF similarity)"
+    assert main.review_label() == "AI review (openrouter, some-model)"

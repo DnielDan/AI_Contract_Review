@@ -1,5 +1,5 @@
-"""US-19: the API the workbench uses. One real scan of a sample contract with the basic matcher (no LLM);
-the other tests replace the pipeline with a quick stand-in.
+"""US-19: the API the workbench uses. One real scan of a sample contract, with a stand-in for the AI
+review (fakes.py); the other tests replace the pipeline with a quick stand-in.
 
 There are no 401 or cross-user scoping tests on purpose: the app has no login yet (US-22, US-8), so
 every scan is open to anyone who can reach the server. Add both for every endpoint when login lands."""
@@ -12,10 +12,13 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import main
+from contract_to_txt import NO_PDF_TEXT
+from fakes import FAKE_MODEL, FAKE_PROVIDER, fake_review_contract, fake_settings
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "..", "supplementary_files", "samples_test_set")
 SAMPLE_DOCX = "0078-23 Adhikari - agreement.docx"
-STATUS_FIELDS = {"id", "filename", "stage", "review_method", "elapsed_seconds", "flagged_count", "ai_notice", "error"}
+SCANNED_PDF = "0264-23 Godwin - fully executed.pdf"  # page images, no text layer
+STATUS_FIELDS = {"id", "filename", "stage", "elapsed_seconds", "flagged_count", "error"}
 
 
 def eventually(condition, timeout=10):
@@ -27,10 +30,12 @@ def eventually(condition, timeout=10):
 
 @pytest.fixture(scope="module")
 def sample_scan(tmp_path_factory, wait_for_scan):
-    """A real scan of a sample agreement (about 30 seconds), shared by the tests that read its results."""
+    """A real scan of a sample agreement, with the stand-in AI review, shared by the tests that read its results."""
     temp_dir = tmp_path_factory.mktemp("scans")
     with pytest.MonkeyPatch.context() as patch:
-        patch.delenv("LLM_PROVIDER", raising=False)  # so provider_name() is None: the matcher, never an LLM
+        for name, value in fake_settings().items():
+            patch.setenv(name, value)
+        patch.setattr(main, "review_contract", fake_review_contract)  # never a real provider
         patch.setattr(main, "TEMP_DIR", str(temp_dir))
         client = TestClient(main.app)
         with open(os.path.join(SAMPLES, SAMPLE_DOCX), "rb") as file:
@@ -50,8 +55,7 @@ def paused_pipeline(monkeypatch):
         on_stage("annotate")
         with open(output, "wb") as file:
             file.write(b"annotated")
-        return {"paragraphs": ["Text."], "flags": [], "far": [], "review_label": "", "review_method": "matcher",
-                "ai_notice": None}
+        return {"paragraphs": ["Text."], "flags": [], "far": [], "review_label": ""}
     monkeypatch.setattr(main, "scan_contract_with_results", scan)
     yield release
     release.set()
@@ -71,8 +75,9 @@ def test_scan_of_a_real_contract_returns_paragraphs_and_language_flags(sample_sc
     assert any(flag["kind"] == "language" and flag["category"] for flag in results["flags"])
     assert all(flag["paragraph"] is None or flag["paragraph"] < len(results["paragraphs"])
                for flag in results["flags"] + results["far"])
-    assert (status["flagged_count"], status["review_method"]) == (len(results["flags"]), "matcher")
-    assert (results["review_method"], results["ai_notice"]) == ("matcher", None)
+    assert status["flagged_count"] == len(results["flags"])
+    assert results["review_label"] == f"AI review ({FAKE_PROVIDER}, {FAKE_MODEL})"
+    assert any(flag["ai_justification"] == "Stand-in AI justification." for flag in results["flags"])
 
 
 def test_download_is_the_annotated_docx_and_nothing_is_left_on_disk(sample_scan):
@@ -109,34 +114,33 @@ def test_upload_is_rejected_before_a_scan_starts(client, monkeypatch, tmp_path, 
 def test_status_reports_the_stage_while_the_scan_runs(client, paused_pipeline):
     status = client.get(f"/api/scans/{start_paused_scan(client)}").json()
     assert set(status) == STATUS_FIELDS
-    assert (status["filename"], status["stage"], status["review_method"]) == ("contract.pdf", "extract", "matcher")
+    assert (status["filename"], status["stage"]) == ("contract.pdf", "extract")
     assert status["elapsed_seconds"] >= 0 and status["error"] is None
 
 
-def test_status_reports_fallback_before_the_scan_finishes(client, monkeypatch, wait_for_scan):
-    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
-
+def test_failed_ai_review_fails_the_scan_with_the_reason(client, monkeypatch, wait_for_scan, tmp_path):
     def failing_call(*args):
-        raise RuntimeError("no reply")
+        raise RuntimeError("rate limited")
     monkeypatch.setattr(main, "review_contract", failing_call)
-    monkeypatch.setattr(main, "flag_sentences", lambda *args: {})  # the real matcher takes about 30 seconds here
-    release = threading.Event()
-    annotate = main.annotate_contract
-
-    def paused_annotate(*args):
-        release.wait(10)
-        annotate(*args)
-    monkeypatch.setattr(main, "annotate_contract", paused_annotate)
     with open(os.path.join(SAMPLES, SAMPLE_DOCX), "rb") as file:
         scan_id = client.post("/api/scans", files={"file": (SAMPLE_DOCX, file.read())}).json()["id"]
-    try:
-        eventually(lambda: client.get(f"/api/scans/{scan_id}").json()["stage"] == "annotate")
-        status = client.get(f"/api/scans/{scan_id}").json()
-        assert status["review_method"] == "matcher"
-        assert status["ai_notice"].startswith("AI review unavailable")
-    finally:
-        release.set()
-    assert wait_for_scan(client, scan_id, timeout=30)["stage"] == "done"
+    status = wait_for_scan(client, scan_id, timeout=60)
+    # No fallback to the matcher: the reviewer is told the AI review failed and gets no results
+    assert status["stage"] == "failed"
+    assert status["error"].startswith(f"Could not review {SAMPLE_DOCX}.")
+    assert f"AI service ({FAKE_PROVIDER}) did not return a usable result" in status["error"]
+    assert client.get(f"/api/scans/{scan_id}/results").status_code == 409
+    assert os.listdir(tmp_path) == []
+
+
+@pytest.mark.parametrize("unset", ["LLM_PROVIDER", "GEMINI_API_KEY"])
+def test_upload_is_turned_down_while_the_ai_review_is_not_set_up(client, monkeypatch, tmp_path, unset):
+    monkeypatch.delenv(unset)
+    response = client.post("/api/scans", files={"file": ("contract.docx", b"contract")})
+    assert response.status_code == 503
+    assert response.json()["detail"].startswith(main.AI_NOT_SET_UP)
+    assert unset in response.json()["detail"]
+    assert main._scans == {} and os.listdir(tmp_path) == []
 
 
 def test_results_and_download_wait_until_the_scan_is_done(client, wait_for_scan, paused_pipeline):
@@ -160,20 +164,114 @@ def test_delete_cancels_a_running_scan_and_forgets_it(client, paused_pipeline, t
     assert client.delete(f"/api/scans/{scan_id}").status_code == 404
 
 
-def test_config_reports_the_matcher_without_an_llm(client):
-    assert client.get("/api/config").json() == {"review_method": "matcher", "provider": None, "model": None}
+def test_contract_scans_run_one_at_a_time(client, monkeypatch, wait_for_scan):
+    running, most_at_once, lock = [], [], threading.Lock()
+
+    def scan(path, output, on_stage):
+        with lock:
+            running.append(path)
+            most_at_once.append(len(running))
+        on_stage("review")
+        time.sleep(0.2)
+        with open(output, "wb") as file:
+            file.write(b"annotated")
+        with lock:
+            running.remove(path)
+        return {"paragraphs": [], "flags": [], "far": [], "review_label": ""}
+    monkeypatch.setattr(main, "scan_contract_with_results", scan)
+    scan_ids = [client.post("/api/scans", files={"file": (f"c{n}.docx", b"contract")}).json()["id"] for n in range(3)]
+    assert [wait_for_scan(client, scan_id)["stage"] for scan_id in scan_ids] == ["done"] * 3
+    assert max(most_at_once) == 1
 
 
-def test_config_names_the_llm_when_one_is_configured(client, monkeypatch):
-    monkeypatch.setenv("LLM_PROVIDER", "gemini")
-    monkeypatch.delenv("LLM_MODEL", raising=False)
-    assert client.get("/api/config").json() == {"review_method": "llm", "provider": "gemini", "model": "gemini-2.5-flash"}
+def test_scan_waiting_for_its_turn_stays_queued_and_can_be_cancelled(client, paused_pipeline, tmp_path):
+    start_paused_scan(client)  # holds the turn until the pipeline is released
+    waiting_id = client.post("/api/scans", files={"file": ("second.docx", b"contract")}).json()["id"]
+    waiting = main._scans[waiting_id]
+    time.sleep(main.QUEUE_CHECK_SECONDS * 3)
+    assert client.get(f"/api/scans/{waiting_id}").json()["stage"] == "queued"
+    assert client.delete(f"/api/scans/{waiting_id}").status_code == 204
+    eventually(lambda: waiting.stage == "cancelled")  # while the first scan still holds the turn
+    assert waiting.results is None
+    assert len(os.listdir(tmp_path)) == 1  # only the running scan's working directory; the queued one wrote nothing
+
+
+def stored_scan(scan_id, finished_seconds_ago=None):
+    """Puts a scan straight into the server's list: finished that long ago, or still running when None."""
+    now = time.monotonic()
+    scan = main.Scan(id=scan_id, filename=f"{scan_id}.docx", docx_name=f"{scan_id}_scanned.docx",
+                     stage="done" if finished_seconds_ago is not None else "review", started_at=now - 7200,
+                     finished_at=None if finished_seconds_ago is None else now - finished_seconds_ago)
+    main._scans[scan_id] = scan
+    return scan
+
+
+def test_finished_scans_are_forgotten_after_the_retention_time(client, monkeypatch):
+    monkeypatch.setenv("AICR_SCAN_RETENTION_MINUTES", "1")
+    stored_scan("old", finished_seconds_ago=61)
+    stored_scan("recent", finished_seconds_ago=30)
+    stored_scan("running")  # started two hours ago, but running scans are never forgotten
+    assert client.get("/api/scans/old").status_code == 404
+    assert "expired" in client.get("/api/scans/old/download").json()["detail"]
+    assert client.get("/api/scans/recent").status_code == 200
+    assert client.get("/api/scans/running").json()["stage"] == "review"
+
+
+def test_only_the_newest_finished_scans_are_kept(client, monkeypatch):
+    monkeypatch.setattr(main, "MAX_FINISHED_SCANS", 2)
+    for scan_id, seconds_ago in (("first", 30), ("second", 20), ("third", 10)):
+        stored_scan(scan_id, finished_seconds_ago=seconds_ago)
+    stored_scan("running")
+    main.forget_old_scans()
+    assert sorted(main._scans) == ["running", "second", "third"]
+
+
+def test_delete_removes_a_finished_scan_and_its_annotated_copy(client, fake_scan, wait_for_scan):
+    fake_scan(flagged=1)
+    scan_id = client.post("/api/scans", files={"file": ("contract.docx", b"contract")}).json()["id"]
+    assert wait_for_scan(client, scan_id)["stage"] == "done"
+    assert client.delete(f"/api/scans/{scan_id}").status_code == 204
+    assert client.get(f"/api/scans/{scan_id}/download").status_code == 404
+    assert main._scans == {}
+
+
+def test_config_says_why_the_ai_review_is_not_set_up(client, monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER")
+    config = client.get("/api/config").json()
+    assert (config["ai_ready"], config["provider"], config["model"]) == (False, None, None)
+    assert config["problem"] == f"{main.AI_NOT_SET_UP} (LLM_PROVIDER is not set in .env)"
+
+
+def test_config_names_the_provider_and_model_when_set_up(client, monkeypatch):
+    monkeypatch.delenv("LLM_MODEL")
+    assert client.get("/api/config").json() == {
+        "ai_ready": True, "problem": None, "provider": "gemini", "model": "gemini-flash-latest"}
 
 
 def test_subcontract_scan_returns_whether_findings_were_flagged(client, tmp_path):
-    with open(os.path.join(SAMPLES, "0264-23 Godwin - fully executed.pdf"), "rb") as file:
+    # A subcontract, not an audit report, so none of the audit-finding phrases are in it (see README)
+    with open(os.path.join(SAMPLES, "24-00373 Subcontract Auburn University_FE (1).pdf"), "rb") as file:
         response = client.post("/api/subcontract-scans", files={"file": ("audit.pdf", file.read())})
-    assert response.status_code == 200 and isinstance(response.json()["flagged"], bool)
+    assert (response.status_code, response.json()) == (200, {"flagged": False})
+    assert os.listdir(tmp_path) == []
+
+
+def test_scanned_pdf_fails_before_the_ai_review_with_the_reason(client, monkeypatch, wait_for_scan, tmp_path):
+    reviewed = []
+    monkeypatch.setattr(main, "review_contract", lambda *args: reviewed.append(args) or [])
+    with open(os.path.join(SAMPLES, SCANNED_PDF), "rb") as file:
+        scan_id = client.post("/api/scans", files={"file": ("godwin.pdf", file.read())}).json()["id"]
+    status = wait_for_scan(client, scan_id)
+    assert (status["stage"], status["flagged_count"]) == ("failed", 0)
+    assert status["error"] == f"Could not process godwin.pdf. {NO_PDF_TEXT}"
+    assert reviewed == []  # nothing was sent to the AI
+    assert os.listdir(tmp_path) == []
+
+
+def test_subcontract_scan_of_a_scanned_pdf_is_an_error_not_unflagged(client, tmp_path):
+    with open(os.path.join(SAMPLES, SCANNED_PDF), "rb") as file:
+        response = client.post("/api/subcontract-scans", files={"file": ("audit.pdf", file.read())})
+    assert (response.status_code, response.json()) == (422, {"detail": f"Could not process audit.pdf. {NO_PDF_TEXT}"})
     assert os.listdir(tmp_path) == []
 
 

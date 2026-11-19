@@ -1,12 +1,11 @@
-"""AI review (US-12): provider selection, matrix-backed output, and fallback to the matcher. No network calls."""
-import os
-
+"""AI review (US-12): provider selection, matrix-backed output, and failures reported without a matcher
+fallback. No network calls."""
 import pytest
 
 import llm_providers
 import llm_review
 import main
-from flag_problem_language import load_tnc_matrix
+from flag_problem_language import load_tnc_matrix, write_flagged_text
 
 TNC = load_tnc_matrix(main.TNC_MATRIX_PATH)
 # A real matrix row, so the tests check that guidance is looked up from the matrix
@@ -24,12 +23,14 @@ def fake_reply(quote=FLAGGED, matched_problem=PROBLEM):
     }]}
 
 
+# Runs the app's AI review (main.ai_flags) on CONTRACT with `reply` as the model's answer, writes the
+# flagged text as the scan does, and returns the number of flags and that text
 def run_llm_flagging(tmp_path, monkeypatch, reply):
     monkeypatch.setattr(llm_review, "generate_structured", lambda prompt, schema, name: reply)
-    contract_txt, flagged_txt = tmp_path / "contract.txt", tmp_path / "flagged.txt"
-    contract_txt.write_text(CONTRACT, encoding="utf-8")
-    count = llm_review.llm_flag_problem_language(main.TNC_MATRIX_PATH, str(contract_txt), str(flagged_txt))
-    return count, flagged_txt.read_text(encoding="utf-8")
+    flags = main.ai_flags(CONTRACT)
+    flagged_txt = tmp_path / "flagged.txt"
+    write_flagged_text(CONTRACT, flags, str(flagged_txt))
+    return len(flags), flagged_txt.read_text(encoding="utf-8")
 
 
 def test_flagged_passage_gets_matrix_guidance_and_ai_suggestion(tmp_path, monkeypatch):
@@ -89,35 +90,43 @@ def test_json_wrapped_in_text_is_parsed():
     assert llm_providers._parse_json_text('Here you go:\n```json\n{"issues": []}\n```') == {"issues": []}
 
 
-def test_scan_without_llm_uses_matcher_and_no_notice(tmp_path, monkeypatch):
-    called = []
-    monkeypatch.setattr(main, "llm_flag_problem_language", lambda *args: called.append(args))
-    contract_txt = tmp_path / "contract.txt"
-    contract_txt.write_text(CONTRACT, encoding="utf-8")
-    _, notice = main.flag_problem_language(str(contract_txt), str(tmp_path / "flagged.txt"))
-    assert notice is None and not called
+@pytest.mark.parametrize("settings, problem", [
+    ({}, "LLM_PROVIDER is not set"),
+    ({"LLM_PROVIDER": "copilot"}, "Unknown LLM_PROVIDER 'copilot'"),
+    ({"LLM_PROVIDER": "anthropic"}, "ANTHROPIC_API_KEY is not set"),
+    ({"LLM_PROVIDER": "gemini", "GEMINI_API_KEY": "key"}, None),
+])
+def test_configuration_problem_checks_the_settings_without_calling_the_provider(monkeypatch, settings, problem):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    for name, value in settings.items():
+        monkeypatch.setenv(name, value)
+    result = llm_providers.configuration_problem()
+    assert result is None if problem is None else problem in result
 
 
-def test_failed_llm_call_falls_back_to_matcher_with_notice(tmp_path, monkeypatch):
+def test_without_a_provider_there_is_no_review_and_no_matcher(monkeypatch):
+    with pytest.raises(main.AIReviewError, match="LLM_PROVIDER is not set") as raised:
+        main.ai_flags(CONTRACT)
+    assert str(raised.value).startswith(main.AI_NOT_SET_UP)
+
+
+def test_failed_llm_call_is_reported_not_replaced_by_the_matcher(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "openrouter")
 
     def failing_call(*args):
         raise ConnectionError("rate limited")
-    monkeypatch.setattr(main, "llm_flag_problem_language", failing_call)
-    contract_txt, flagged_txt = tmp_path / "contract.txt", tmp_path / "flagged.txt"
-    contract_txt.write_text(CONTRACT, encoding="utf-8")
-    _, notice = main.flag_problem_language(str(contract_txt), str(flagged_txt))
-    assert "basic matcher" in notice and "openrouter" in notice
-    assert os.path.exists(flagged_txt)
+    monkeypatch.setattr(main, "review_contract", failing_call)
+    with pytest.raises(main.AIReviewError, match=r"AI service \(openrouter\) did not return a usable result") as raised:
+        main.ai_flags(CONTRACT)
+    assert isinstance(raised.value.__cause__, ConnectionError)  # logged with the scan failure
 
 
-def test_missing_key_notice_names_the_key(tmp_path, monkeypatch):
+def test_missing_key_is_reported_as_not_set_up_and_names_the_key(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "gemini")
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
-    contract_txt = tmp_path / "contract.txt"
-    contract_txt.write_text(CONTRACT, encoding="utf-8")
-    _, notice = main.flag_problem_language(str(contract_txt), str(tmp_path / "flagged.txt"))
-    assert "GEMINI_API_KEY" in notice
+    with pytest.raises(main.AIReviewError, match="GEMINI_API_KEY") as raised:
+        main.ai_flags(CONTRACT)
+    assert str(raised.value).startswith(main.AI_NOT_SET_UP)
 
 
 def test_issues_returned_as_json_strings_are_accepted(tmp_path, monkeypatch):
@@ -148,19 +157,6 @@ def test_unreadable_reply_is_retried_then_reported(monkeypatch):
 def test_workbench_flags_from_the_ai_review_carry_matrix_guidance(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "openrouter")
     monkeypatch.setattr(llm_review, "generate_structured", lambda *args: fake_reply())
-    flags, notice = main.flag_problem_language_data(CONTRACT)
-    (quote, details), = flags
+    (quote, details), = main.ai_flags(CONTRACT)
     assert quote == FLAGGED and details["Why"] == TNC[CATEGORY]["Why"][0]  # from the matrix, not the model
-    assert details["AI justification"] == "AI says this is a problem." and notice is None
-
-
-def test_workbench_flags_fall_back_to_the_matcher_with_notice(monkeypatch):
-    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
-
-    def failing_call(*args):
-        raise ConnectionError("rate limited")
-    monkeypatch.setattr(main, "review_contract", failing_call)
-    monkeypatch.setattr(main, "flag_sentences", lambda *args: {"Matched sentence.": {"Problem Category": "Audit"}})
-    flags, notice = main.flag_problem_language_data(CONTRACT)
-    assert flags == [("Matched sentence.", {"Problem Category": "Audit"})]
-    assert "basic matcher" in notice and "openrouter" in notice
+    assert details["AI justification"] == "AI says this is a problem."

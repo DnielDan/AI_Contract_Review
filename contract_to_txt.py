@@ -90,26 +90,24 @@ def _clean_word_text(text):
             output.append(char)
     return ''.join(output)
 
-# Removes blank lines and surrounding whitespace, then writes the text for the rest of the pipeline
-def _write_clean_text(raw_text, txt_path):
+# Removes blank lines and surrounding whitespace
+def _clean_text(raw_text):
     lines = [line.strip() for line in raw_text.strip().split('\n')]
-    cleaned_text = '\n'.join(line for line in lines if line)
+    return '\n'.join(line for line in lines if line)
 
-    with open(txt_path, 'w', encoding="utf-8") as file:
-        file.write(cleaned_text)
+# A document with fewer letters than this has no readable text. Real contracts have thousands (the
+# shortest sample has over 7,000); a scanned PDF without a text layer gives none.
+MIN_TEXT_LETTERS = 100
+NO_PDF_TEXT = ("No text could be read from this PDF; it is probably a scanned image without a text layer. "
+               "Run it through OCR (text recognition) first, or upload the Word version.")
+NO_DOCUMENT_TEXT = "This document has no text to review."
 
-# Function to process and clean the content of a DOCX file
-def _clean_docx(docx_path, txt_path):
-    _write_clean_text(docx2txt.process(docx_path), txt_path)
-
-# Function to process and clean the content of a legacy DOC file
-def _clean_doc(doc_path, txt_path):
-    _write_clean_text(extract_doc_text(doc_path), txt_path)
-
-# Function to process and clean the content of a PDF file
-def _clean_pdf(pdf_path, txt_path):
-    with open(txt_path, 'w', encoding="utf-8") as file:
-        file.write(extract_pdf_text(pdf_path))
+# Returns the text, or raises UnsupportedFileError when there is too little to review, so a scanned PDF
+# is reported as unreadable instead of as a contract with no problems (and is not sent to the AI)
+def require_text(text, extension):
+    if sum(char.isalpha() for char in text) < MIN_TEXT_LETTERS:
+        raise UnsupportedFileError(NO_PDF_TEXT if extension == '.pdf' else NO_DOCUMENT_TEXT)
+    return text
 
 # Function to convert a txt file to docx file
 def txt_to_docx(txt_filepath, cleaned_docx_filepath):
@@ -126,16 +124,21 @@ def txt_to_docx(txt_filepath, cleaned_docx_filepath):
     # Save the Document
     doc.save(cleaned_docx_filepath)
 
-# Writes the contract's text to txt_path; the app passes a path inside the upload's own working directory
+# Writes the contract's text to txt_path; the app passes a path inside the upload's own working directory.
+# Raises UnsupportedFileError, and writes nothing, for an unsupported file type or a document with no
+# readable text (require_text).
 def convert_to_txt(contract_in, txt_path='contract_to_txt.txt'):
     extension = os.path.splitext(contract_in)[1].lower()
     if extension == '.pdf':
-        _clean_pdf(contract_in, txt_path)
+        text = extract_pdf_text(contract_in)
     elif extension == '.docx':
-        _clean_docx(contract_in, txt_path)
+        text = _clean_text(docx2txt.process(contract_in))
     elif extension == '.doc':
-        _clean_doc(contract_in, txt_path)
+        text = _clean_text(extract_doc_text(contract_in))
     else:
         # Raising (rather than returning an error string) stops the scan here; otherwise the next
         # step would read text left over from an earlier scan
         raise UnsupportedFileError(f"'{extension or 'no extension'}' files are not supported. Upload a .docx, .doc, or .pdf file.")
+    require_text(text, extension)
+    with open(txt_path, 'w', encoding="utf-8") as file:
+        file.write(text)

@@ -35,6 +35,8 @@ button { font:inherit; color:inherit; }
 .scan .n em { font-style:normal; font-weight:400; color:#8b98a8; flex:none; }
 .scan.failed .n em, .scan .why { color:#c9302c; }
 .scan .why { font-size:12.5px; }
+.scan .rm { background:none; border:none; color:#8b98a8; font-size:17px; line-height:1; padding:0 2px; margin-left:-4px; cursor:pointer; flex:none; }
+.scan .rm:hover { color:#1f2a38; }
 .track { height:7px; background:#e6ebf1; border-radius:4px; overflow:hidden; }
 .fill { height:100%; width:0; background:#E87722; border-radius:4px; transition:width .1s linear; }
 

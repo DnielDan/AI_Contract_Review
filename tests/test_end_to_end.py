@@ -4,28 +4,31 @@ import os
 from docx import Document
 
 import main
+from fakes import FAKE_MODEL, FAKE_PROVIDER
 
 SAMPLE_DOCX = os.path.join(os.path.dirname(__file__), "..", "supplementary_files", "samples_test_set",
                            "382_PAm-WilliamsFundingAgreementDraft.docx")
 
 
-def test_full_scan_of_docx_produces_annotated_output(tmp_path, monkeypatch):
+def test_full_scan_of_docx_produces_annotated_output(tmp_path, monkeypatch, fake_ai):
     monkeypatch.chdir(tmp_path)
     output = tmp_path / "scanned.docx"
-    flagged_count = main.scan_file(SAMPLE_DOCX, str(output))
+    results = main.scan_contract_with_results(SAMPLE_DOCX, str(output))
 
-    text = "\n".join(paragraph.text for paragraph in Document(output).paragraphs)
+    paragraphs = Document(output).paragraphs
+    text = "\n".join(paragraph.text for paragraph in paragraphs)
+    assert paragraphs[0].text == f"Problem language reviewed by: AI review ({FAKE_PROVIDER}, {FAKE_MODEL})"
     assert "FAR Acceptance Status Color Code" in text
-    assert text.count("Problem Category:") >= flagged_count > 0
+    assert text.count("Problem Category:") >= len(results["flags"]) > 0
+    assert "AI justification: Stand-in AI justification." in text
 
 
-def test_scan_with_results_reports_each_step_and_matches_the_annotated_copy(tmp_path, monkeypatch):
-    # The TF-IDF matcher is replaced with one fixed flag, so the test only takes the time of the other steps
+def test_scan_with_results_reports_each_step_and_matches_the_annotated_copy(tmp_path, monkeypatch, fake_ai):
+    # The AI review is replaced with one fixed flag, so the test only takes the time of the other steps
     flag = ("RESEARCH AGREEMENT 382", {"Problem Category": "Test category"})
-    monkeypatch.setattr(main, "flag_problem_language_data", lambda text: ([flag], None))
+    monkeypatch.setattr(main, "ai_flags", lambda text, before_retry=None: [flag])
     stages, output = [], tmp_path / "scanned.docx"
-    results = main.scan_contract_with_results(SAMPLE_DOCX, str(output),
-                                              lambda stage, ai_notice=None: stages.append(stage))
+    results = main.scan_contract_with_results(SAMPLE_DOCX, str(output), stages.append)
 
     assert stages == ["extract", "review", "annotate"]
     (language_flag,) = results["flags"]

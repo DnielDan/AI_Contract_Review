@@ -33,8 +33,8 @@ FAR_ROW = {"Title": "Basic Safeguarding of Covered Contractor Information System
            "Acceptance Criteria or Additional Notes": float("nan"), "Request to Sponsor": "Please remove."}
 
 
-def results_for(flags, far_clauses=None, far_rows=None, ai_notice=None):
-    return build_results(CONTRACT, flags, far_clauses or {}, far_rows or {}, "Basic matcher", ai_notice)
+def results_for(flags, far_clauses=None, far_rows=None):
+    return build_results(CONTRACT, flags, far_clauses or {}, far_rows or {}, "AI review (gemini, test-model)")
 
 
 @pytest.mark.parametrize("details, expected", [
@@ -80,12 +80,6 @@ def test_far_clause_missing_from_the_matrix_rows_has_empty_notes():
     assert (far["title"], far["criteria"], far["request"]) == (None, None, None)
 
 
-@pytest.mark.parametrize("ai_notice, method", [(None, "llm"), ("AI review unavailable", "matcher")])
-def test_review_method_says_which_review_produced_the_flags(monkeypatch, ai_notice, method):
-    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
-    results = results_for([], ai_notice=ai_notice)
-    assert (results["review_method"], results["ai_notice"]) == (method, ai_notice)
-
-
-def test_review_method_is_matcher_without_an_llm():
-    assert results_for([])["review_method"] == "matcher"
+def test_results_carry_the_review_label_and_nothing_about_a_fallback():
+    assert set(results_for([])) == {"paragraphs", "flags", "far", "review_label"}
+    assert results_for([])["review_label"] == "AI review (gemini, test-model)"
