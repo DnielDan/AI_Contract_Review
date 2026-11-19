@@ -136,13 +136,14 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
 - It took 1 to 3.5 minutes per contract and flagged a different number of passages on repeated calls.
 - `evaluation/results/llm_dev.md` records one scoring run as a prototype record only. It is not
   representative of the model that will be chosen.
-- The Claude and Gemini paths are covered by the offline tests but have not yet been called with a
-  real key.
+- Claude (Haiku, Sonnet) and Gemini were then scored on `dev` with personal and free keys (November
+  12–17); results and the recommendation are in [MODEL_RECOMMENDATION.md](MODEL_RECOMMENDATION.md).
 
 **Open items**
 - US-23: hand-off guide for IT to add the approved provider's key once the agreement is signed.
 - When Claude or Gemini keys arrive: one test scan, then score on `dev` (more than one run).
-- Choose the provider and model (US-12). A hosted provider may be used on real contracts only after
+- Choose the provider and model (US-12): the team recommends Gemini Flash; see
+  [MODEL_RECOMMENDATION.md](MODEL_RECOMMENDATION.md) for the results and what to do first. A hosted provider may be used on real contracts only after
   OSP and Auburn IT approve it under a data-protection agreement.
 - US-13: run the injection check against the chosen provider and model, and record the result in
   DATA_HANDLING.md. The offline parts are done: no contract text or keys in the log, no keys in the
