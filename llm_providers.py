@@ -33,11 +33,14 @@ _OPENAI_COMPATIBLE_PRESETS = {
     "gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
         "key_env": "GEMINI_API_KEY",
-        "default_model": "gemini-2.5-flash",
+        # The model the team scored best (docs/MODEL_RECOMMENDATION.md). An alias Google can repoint, fine for
+        # the course demo; IT sets LLM_MODEL to a fixed version (docs/IT_HANDOFF.md).
+        "default_model": "gemini-flash-latest",
     },
 }
 
-_ANTHROPIC_DEFAULT_MODEL = "claude-opus-5-5"
+# Sonnet scored better than Haiku with the standard prompt; Opus was not tested.
+_ANTHROPIC_DEFAULT_MODEL = "claude-sonnet-5-5"
 
 PROVIDERS = sorted([*_OPENAI_COMPATIBLE_PRESETS, "anthropic"])
 

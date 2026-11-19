@@ -245,7 +245,7 @@ def test_config_says_why_the_ai_review_is_not_set_up(client, monkeypatch):
 def test_config_names_the_provider_and_model_when_set_up(client, monkeypatch):
     monkeypatch.delenv("LLM_MODEL")
     assert client.get("/api/config").json() == {
-        "ai_ready": True, "problem": None, "provider": "gemini", "model": "gemini-2.5-flash"}
+        "ai_ready": True, "problem": None, "provider": "gemini", "model": "gemini-flash-latest"}
 
 
 def test_subcontract_scan_returns_whether_findings_were_flagged(client, tmp_path):
