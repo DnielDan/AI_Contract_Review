@@ -49,8 +49,8 @@ the browser):
 - **At most two replies per contract:** a reply that cannot be read, or is not a list of issues, is
   asked for once more (`llm_review.MAX_REPLY_ATTEMPTS`); anything else fails at once. Asking for raw
   JSON when a model rejects forced tool calls does not count, since the rejection generates nothing.
-  The SDKs still retry connection errors, rate limits and server errors twice with backoff
-  (`SDK_MAX_RETRIES`).
+  The SDKs still retry connection errors, rate limits, server errors and timeouts once (`SDK_MAX_RETRIES`),
+  so a call sends at most two requests.
 - **Effort:** `LLM_EFFORT` (low, medium, high) is sent as `output_config.effort` to Claude and as
   `reasoning_effort` to OpenAI-compatible providers; empty means the model's default.
 - **One contract scan at a time** (`main._scan_turn_for`): the others stay "queued", with nothing on

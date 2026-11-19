@@ -19,7 +19,7 @@ DEFAULT_TIMEOUT_SECONDS = 300
 # unless LLM_MAX_TOKENS is set.
 DEFAULT_ANTHROPIC_MAX_TOKENS = 16000
 # Retries the SDKs make for connection errors, rate limits (429) and server errors (5xx), with backoff
-SDK_MAX_RETRIES = 2
+SDK_MAX_RETRIES = 1  # at most 2 requests per call: free tiers count retries against their limits
 EFFORTS = ("low", "medium", "high")
 
 # Providers that speak the OpenAI chat-completions format. Switching between them only changes
