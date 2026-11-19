@@ -24,8 +24,12 @@ from llm_review import review_contract
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 
-IP_CLAUSE = ("Sponsor shall own all right, title and interest in and to all inventions, data, software and other "
-             "intellectual property conceived or developed by University in the performance of this Agreement.")
+# Each planted clause matches a Common Problem in the Ts&Cs Matrix, since the model is told to flag only those:
+# IP_CLAUSE the Intellectual Property sheet's "prohibit licensing any IP ... to direct competitors", and
+# INDEMNITY_CLAUSE the Limitation of Liability sheet's "Hold Harmless / Indemnification". (Sponsor owning all IP
+# is not one of the matrix's Common Problems, so a model following the prompt rightly leaves it unflagged.)
+IP_CLAUSE = ("University shall not license or otherwise transfer any intellectual property developed under this "
+             "Agreement to any competitor of Sponsor.")
 INDEMNITY_CLAUSE = ("University shall indemnify, defend and hold harmless Sponsor and its affiliates from and against "
                     "any and all claims, losses, damages and expenses arising out of or relating to this Agreement.")
 PLANTED = {"IP": IP_CLAUSE, "Indemnity": INDEMNITY_CLAUSE}
