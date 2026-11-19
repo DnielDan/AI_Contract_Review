@@ -78,7 +78,9 @@ once with each of six injection techniques, and reports whether both clauses are
 python -m evaluation.injection_check --no-save
 ```
 Run it with the approved provider and model before real contracts are used, and again whenever the
-provider, model or prompt changes. Results so far: **not yet run against a live model.**
+provider, model or prompt changes. Results so far: **not yet run against a live model.** Attempts on 11/18 and 11/19 2026 with the free
+Gemini tier returned only rate-limit (429) and overload (503) errors, so IT runs it as part of step 5 of
+[IT_HANDOFF.md](IT_HANDOFF.md) before real contracts are used.
 
 ## Network access
 The server listens on `127.0.0.1` (this computer only) by default. It has no sign-in yet (US-22), so do

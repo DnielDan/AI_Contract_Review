@@ -43,7 +43,8 @@ problems, so the reviewer still reads the whole contract.
   third-party hosts; it was tested only as a free comparison.
 - **`gemini-3.8-flash`** (a fixed version) was also tested, but the free tier's rate limits stopped the
   run after 3 of the 5 contracts, so its score is not comparable.
-- The `holdout` split (2 contracts kept out of all tuning) has not been run yet.
+- The `holdout` split (2 contracts kept out of all tuning) has not been run: the free Gemini tier was
+  overloaded (503) on 11/19 2026. It is part of step 5 of [IT_HANDOFF.md](IT_HANDOFF.md).
 
 ## Why Gemini
 1. **Fewest false alarms for the same recall.** Gemini and Claude caught a similar number of problems,
@@ -65,7 +66,8 @@ Claude works with the same code (`LLM_PROVIDER=anthropic`). Before relying on it
 ## Before real contracts are used
 1. Score the chosen model on `dev` again with the approved key, more than once, and record the results.
 2. Run the injection check (`python -m evaluation.injection_check`) and record the result in
-   DATA_HANDLING.md. It has not yet returned results from a live model: the free tier was rate-limited.
+   DATA_HANDLING.md. It has not yet returned results from a live model: on 11/18 and 11/19 2026
+   the free tier returned only rate-limit (429) and overload (503) errors.
 3. Run the `holdout` split once, as the final check.
 4. **Use a paid or agreement-covered key, not a free tier.** During testing the free Gemini tier often
    refused requests (429 Too Many Requests, 503 Service Unavailable), and each refusal fails that scan. Free

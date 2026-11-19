@@ -147,7 +147,7 @@ python -m evaluation.evaluate --scanner llm --split dev --no-save
   [MODEL_RECOMMENDATION.md](MODEL_RECOMMENDATION.md) for the results and what to do first. A hosted provider may be used on real contracts only after
   OSP and Auburn IT approve it under a data-protection agreement.
 - US-13: run the injection check against the chosen provider and model, and record the result in
-  DATA_HANDLING.md. The offline parts are done: no contract text or keys in the log, no keys in the
+  DATA_HANDLING.md (left to IT: the free tier was unavailable on 11/18 and 11/19 2026). The offline parts are done: no contract text or keys in the log, no keys in the
   repository, the contract fenced in the prompt, text never rendered as HTML.
 - US-17: tune the prompt and model on the `dev` split.
 - Update the Cycle 2 report: it still names Azure OpenAI as the leading option.
